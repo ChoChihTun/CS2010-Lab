@@ -4,13 +4,13 @@ import javafx.util.Pair;
 
 // write your matric number here: A0154907Y
 // write your name here: Cho Chih Tun
-// write list of collaborators here:
+// write list of collaborators here: Referred to the BinaryHeapDemo.java
 // year 2018 hash code: tPW3cEr39msnZUTL2L5J (do NOT delete this line)
 
 class EmergencyRoom {
   // if needed, declare a private data structure here that
   // is accessible to all methods in this class
-  private ArrayList<Pair<String, Integer>> patientList;
+  private ArrayList<Patient> patientList;
   private int BinaryHeapSize;
 
   public EmergencyRoom() {
@@ -18,7 +18,7 @@ class EmergencyRoom {
     //
     // write your answer here
     patientList = new ArrayList<>();
-    Pair<String, Integer> dummy = new Pair<>("DUMMY", 0);
+    Patient dummy = new Patient("DUMMY", 0, BinaryHeapSize);
     patientList.add(dummy);
     BinaryHeapSize = 0;
   }
@@ -29,30 +29,70 @@ class EmergencyRoom {
 
   int right(int i) { return (i<<1) + 1; } // shortcut for 2*i + 1
 
+  void swap(int i) {
+    // Swap current node with its parent node
+    Patient temp = patientList.get(i);
+    patientList.set(i, patientList.get(parent(i)));
+    patientList.set(parent(i), temp);
+  }
+
   void shiftUp(int i) {
-    while (i > 1 && patientList.get(parent(i)).getValue() < patientList.get(i).getValue()) {
-      // Swap parent and child node
-      Pair<String, Integer> temp = patientList.get(i);
-      patientList.set(i, patientList.get(parent(i)));
-      patientList.set(parent(i), temp);
+    while (i > 1 && patientList.get(parent(i)).getEmergencyLvl() <= patientList.get(i).getEmergencyLvl()) {
+      boolean isSwap = true;
+      // Compares the arrival time of patients with same emergency level
+      if (patientList.get(parent(i)).getEmergencyLvl() == patientList.get(i).getEmergencyLvl() && patientList.get(i).getArrivalOrderNumber() > patientList.get(parent(i)).getArrivalOrderNumber()) {
+        isSwap = false;
+      }
+
+      if (isSwap) {
+        swap(i);
+      }
+
       i = parent(i);
     }
   }
 
+
   void shiftDown(int i) {
     while (i <= BinaryHeapSize) {
-      int maxV = patientList.get(i).getValue(), max_id = i;
-      if (left(i) <= BinaryHeapSize && maxV < patientList.get(left(i)).getValue()) { // compare value of this node with its left subtree, if possible
-        maxV = patientList.get(left(i)).getValue();
-        max_id = left(i);
+      int maxV = patientList.get(i).getEmergencyLvl(), max_id = i;
+      if (left(i) <= BinaryHeapSize) { // compare value of this node with its left subtree, if possible
+        boolean isSwap = false;
+        // If left child is of higher emergency level
+        if (maxV < patientList.get(left(i)).getEmergencyLvl()) {
+          isSwap = true;
+
+        // If left child has same emergency level but arrives earlier
+        } else if (maxV == patientList.get(left(i)).getEmergencyLvl() && patientList.get(left(i)).getArrivalOrderNumber() < patientList.get(i).getArrivalOrderNumber()) {
+          isSwap = true;
+        }
+
+        if (isSwap) {
+          maxV = patientList.get(left(i)).getEmergencyLvl();
+          max_id = left(i);
+        }
       }
-      if (right(i) <= BinaryHeapSize && maxV < patientList.get(right(i)).getValue()) { // now compare with its right subtree, if possible
-        maxV = patientList.get(right(i)).getValue();
-        max_id = right(i);
+      
+      if (right(i) <= BinaryHeapSize) { // now compare with its right subtree, if possible
+        boolean isSwap = false;
+        // If right child is of higher emergency level
+        if (maxV < patientList.get(right(i)).getEmergencyLvl()) {
+          isSwap = true;
+
+          // If right child has same emergency level but arrives earlier
+        } else if (maxV == patientList.get(right(i)).getEmergencyLvl()
+            && patientList.get(right(i)).getArrivalOrderNumber() < patientList.get(max_id).getArrivalOrderNumber()) {
+          isSwap = true;
+        }
+
+        if (isSwap) {
+          maxV = patientList.get(right(i)).getEmergencyLvl();
+          max_id = right(i);
+        }
       }
 
       if (max_id != i) {
-        Pair<String, Integer> temp = patientList.get(i);
+        Patient temp = patientList.get(i);
         patientList.set(i, patientList.get(max_id));
         patientList.set(max_id, temp);
         i = max_id;
@@ -61,15 +101,25 @@ class EmergencyRoom {
     }
   }
 
+  void ExtractMax() {
+    Patient patient = patientList.get(1);
+    patientList.set(1, patientList.get(BinaryHeapSize));
+    BinaryHeapSize--; // virtual decrease
+    shiftDown(1);
+    patientList.remove(patient);
+  }
+
   void ArriveAtHospital(String patientName, int emergencyLvl) {
     // You have to insert the information (patientName, emergencyLvl)
     // into your chosen data structure
     //
     // write your answer here
-    // Creates a new patient
-    Pair<String, Integer> newPatient = new Pair<>(patientName, emergencyLvl);
-    
+
     BinaryHeapSize++; // Update total number of patients
+
+    // Creates a new patient
+    Patient newPatient = new Patient(patientName, emergencyLvl, BinaryHeapSize);
+    
     if (BinaryHeapSize >= patientList.size()) {
       patientList.add(newPatient);
     } else {
@@ -87,22 +137,16 @@ class EmergencyRoom {
     //
     // write your answer here
     // Searches for the patient
-    for (int i = 0; i < BinaryHeapSize; i++) {
-      if (patientList.get(i).getKey().equals(patientName)) {
-        Pair<String, Integer> patient = patientList.get(i); // patient to be updated
-        int newEmergencyLvl = patient.getValue() + incEmergencyLvl;
-        Pair<String, Integer> updatedPatient = new Pair<>(patient.getKey(), newEmergencyLvl);
-
-        // Updates the patient in the patientList
-        patientList.set(i, updatedPatient);
+    for (int i = 1; i <= BinaryHeapSize; i++) {
+      if (patientList.get(i).getName().equals(patientName)) {
+        Patient patient = patientList.get(i); // patient to be updated
+        patient.updateEmergencyLvl(incEmergencyLvl);
 
         // Fixes any violation to max heap property
         shiftUp(i);
         break; // Exits loop
       }
     }
-
-
   }
 
   void Treat(String patientName) {
@@ -110,16 +154,20 @@ class EmergencyRoom {
     // remove him/her from your chosen data structure
     //
     // write your answer here
-    for (int i = 0; i < BinaryHeapSize; i++) {
-      if (patientList.get(i).getKey().equals(patientName)) {
-        // Creates zero priority patient to replace the treated patient
-        Pair<String, Integer> patient = new Pair<>("REMOVING", 0);
-        patientList.set(i, patient);
-        shiftDown(i);
-        patientList.remove(patient);
+    for (int i = 1; i <= BinaryHeapSize; i++) {
+      if (patientList.get(i).getName().equals(patientName)) {
+        Patient patient = patientList.get(i); // patient to be updated
+
+        // Sets patient emergency level to 101 to override any existing level, including 100
+        patient.setEmergencyLvl(101);
+
+        // Fixes any violation to max heap property
+        shiftUp(i);
+        // Removes treated patient
+        ExtractMax();
+        break;
       }
     }
-    BinaryHeapSize--;
   }
 
   String Query() {
@@ -131,9 +179,14 @@ class EmergencyRoom {
     //
     // write your answer here
     if (BinaryHeapSize > 0) {
-      ans = patientList.get(1).getKey();
+      ans = patientList.get(1).getName();
     }
 
+    System.out.println("================================================================");
+    for (int i = 1; i <= BinaryHeapSize; i++) {
+      System.out.println("Name: " + patientList.get(i).getName() + ". Arrival: "
+          + patientList.get(i).getArrivalOrderNumber() + ". Level: " + patientList.get(i).getEmergencyLvl());
+    }
     return ans;
   }
 
@@ -161,4 +214,31 @@ class EmergencyRoom {
     EmergencyRoom ps1 = new EmergencyRoom();
     ps1.run();
   }
+}
+
+// Contains details of the patient
+class Patient {
+  private int orderNumber;
+  private String name;
+  private int emergencyLvl;
+
+  public Patient(String name, int emergencyLvl, int orderNumber) {
+    this.orderNumber = orderNumber;
+    this.name = name;
+    this.emergencyLvl = emergencyLvl;
+  }
+
+  public void updateEmergencyLvl(int incEmergencyLvl) {
+    this.emergencyLvl += incEmergencyLvl;
+  }
+
+  public void setEmergencyLvl(int emergencyLvl) {
+    this.emergencyLvl = emergencyLvl;
+  }
+
+  public String getName() { return name; }
+
+  public int getEmergencyLvl() { return emergencyLvl; }
+
+  public int getArrivalOrderNumber() { return orderNumber; }
 }
