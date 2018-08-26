@@ -1,22 +1,39 @@
 import java.util.*;
 import java.io.*;
 
-// write your matric number here:
-// write your name here:
+// write your matric number here: A0154907Y
+// write your name here: Cho Chih Tun
 // write list of collaborators here:
 // year 2018 hash code: tPW3cEr39msnZUTL2L5J (do NOT delete this line)
 
 class EmergencyRoom {
   // if needed, declare a private data structure here that
   // is accessible to all methods in this class
+  private ArrayList<Pair<String, Integer>> patientList;
+  private int BinaryHeapSize;
 
   public EmergencyRoom() {
     // Write necessary code during construction
     //
     // write your answer here
+    patientList = new ArrayList<>();
+    BinaryHeapSize = 0;
+  }
 
+  int parent(int i) { return i>>1; }  // shortcut for i/2, round down
 
+  int left(int i) { return i<<1; } // shortcut for 2*i
 
+  int right(int i) { return (i<<1) + 1; } // shortcut for 2*i + 1
+
+  void shiftUp(int i) {
+    while (i > 1 && patientList.get(parent(i)).getValue() < patientList.get(i).getValue()) {
+      // Swap parent and child node
+      Pair<String, Integer> temp = patientList.get(i);
+      patientList.set(i, patientList.get(parent(i)));
+      patientList.set(parent(i), temp);
+      i = parent(i);
+    }
   }
 
   void ArriveAtHospital(String patientName, int emergencyLvl) {
@@ -24,9 +41,18 @@ class EmergencyRoom {
     // into your chosen data structure
     //
     // write your answer here
+    // Creates a new patient
+    Pair<String, Integer> newPatient = new Pair<>(patientName, emergencyLvl);
+    
+    BinaryHeapSize++; // Update total number of patients
+    if (BinaryHeapSize >= patientList.size()) {
+      patientList.add(newPatient);
+    } else {
+      patientList.set(BinaryHeapSize, newPatient);
+    }
 
-
-
+    // Fix any violation to max heap property
+    shiftUp(BinaryHeapSize);
   }
 
   void UpdateEmergencyLvl(String patientName, int incEmergencyLvl) {
