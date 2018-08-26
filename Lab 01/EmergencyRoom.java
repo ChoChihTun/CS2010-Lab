@@ -39,6 +39,28 @@ class EmergencyRoom {
     }
   }
 
+  void shiftDown(int i) {
+    while (i <= BinaryHeapSize) {
+      int maxV = patientList.get(i).getValue(), max_id = i;
+      if (left(i) <= BinaryHeapSize && maxV < patientList.get(left(i)).getValue()) { // compare value of this node with its left subtree, if possible
+        maxV = patientList.get(left(i)).getValue();
+        max_id = left(i);
+      }
+      if (right(i) <= BinaryHeapSize && maxV < patientList.get(right(i)).getValue()) { // now compare with its right subtree, if possible
+        maxV = patientList.get(right(i)).getValue();
+        max_id = right(i);
+      }
+
+      if (max_id != i) {
+        Pair<String, Integer> temp = patientList.get(i);
+        patientList.set(i, patientList.get(max_id));
+        patientList.set(max_id, temp);
+        i = max_id;
+      } else
+        break;
+    }
+  }
+
   void ArriveAtHospital(String patientName, int emergencyLvl) {
     // You have to insert the information (patientName, emergencyLvl)
     // into your chosen data structure
@@ -64,7 +86,21 @@ class EmergencyRoom {
     // and modify your chosen data structure (if needed)
     //
     // write your answer here
+    // Searches for the patient
+    for (int i = 0; i < BinaryHeapSize; i++) {
+      if (patientList.get(i).getKey().equals(patientName)) {
+        Pair<String, Integer> patient = patientList.get(i); // patient to be updated
+        int newEmergencyLvl = patient.getValue() + incEmergencyLvl;
+        Pair<String, Integer> updatedPatient = new Pair<>(patient.getKey(), newEmergencyLvl);
 
+        // Updates the patient in the patientList
+        patientList.set(i, updatedPatient);
+
+        // Fixes any violation to max heap property
+        shiftUp(i);
+        break; // Exits loop
+      }
+    }
 
 
   }
@@ -87,8 +123,9 @@ class EmergencyRoom {
     // be taken care of, return a String "The emergency suite is empty"
     //
     // write your answer here
-
-
+    if (BinaryHeapSize > 0) {
+      ans = patientList.get(1).getKey();
+    }
 
     return ans;
   }
