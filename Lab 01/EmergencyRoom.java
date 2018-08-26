@@ -1,5 +1,6 @@
 import java.util.*;
 import java.io.*;
+import javafx.util.Pair;
 
 // write your matric number here: A0154907Y
 // write your name here: Cho Chih Tun
@@ -17,6 +18,8 @@ class EmergencyRoom {
     //
     // write your answer here
     patientList = new ArrayList<>();
+    Pair<String, Integer> dummy = new Pair<>("DUMMY", 0);
+    patientList.add(dummy);
     BinaryHeapSize = 0;
   }
 
