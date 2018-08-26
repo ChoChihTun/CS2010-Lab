@@ -48,7 +48,7 @@ class EmergencyRoom {
         swap(i);
       }
 
-      i = parent(i);
+      i = parent(i); // update the index
     }
   }
 
@@ -91,6 +91,8 @@ class EmergencyRoom {
         }
       }
 
+      // Swaps node with its child that has higher emergency level or earlier arrival
+      // (if same emergency level)
       if (max_id != i) {
         Patient temp = patientList.get(i);
         patientList.set(i, patientList.get(max_id));
@@ -102,11 +104,9 @@ class EmergencyRoom {
   }
 
   void ExtractMax() {
-    Patient patient = patientList.get(1);
     patientList.set(1, patientList.get(BinaryHeapSize));
     BinaryHeapSize--; // virtual decrease
     shiftDown(1);
-    patientList.remove(patient);
   }
 
   void ArriveAtHospital(String patientName, int emergencyLvl) {
@@ -154,9 +154,10 @@ class EmergencyRoom {
     // remove him/her from your chosen data structure
     //
     // write your answer here
+    // Searches for the patient to be treated
     for (int i = 1; i <= BinaryHeapSize; i++) {
       if (patientList.get(i).getName().equals(patientName)) {
-        Patient patient = patientList.get(i); // patient to be updated
+        Patient patient = patientList.get(i); // patient to be treated
 
         // Sets patient emergency level to 101 to override any existing level, including 100
         patient.setEmergencyLvl(101);
@@ -180,12 +181,6 @@ class EmergencyRoom {
     // write your answer here
     if (BinaryHeapSize > 0) {
       ans = patientList.get(1).getName();
-    }
-
-    System.out.println("================================================================");
-    for (int i = 1; i <= BinaryHeapSize; i++) {
-      System.out.println("Name: " + patientList.get(i).getName() + ". Arrival: "
-          + patientList.get(i).getArrivalOrderNumber() + ". Level: " + patientList.get(i).getEmergencyLvl());
     }
     return ans;
   }
@@ -218,7 +213,7 @@ class EmergencyRoom {
 
 // Contains details of the patient
 class Patient {
-  private int orderNumber;
+  private int orderNumber; // The arrival order of the patient
   private String name;
   private int emergencyLvl;
 
