@@ -110,9 +110,16 @@ class EmergencyRoom {
     // remove him/her from your chosen data structure
     //
     // write your answer here
-
-
-
+    for (int i = 0; i < BinaryHeapSize; i++) {
+      if (patientList.get(i).getKey().equals(patientName)) {
+        // Creates zero priority patient to replace the treated patient
+        Pair<String, Integer> patient = new Pair<>("REMOVING", 0);
+        patientList.set(i, patient);
+        shiftDown(i);
+        patientList.remove(patient);
+      }
+    }
+    BinaryHeapSize--;
   }
 
   String Query() {
