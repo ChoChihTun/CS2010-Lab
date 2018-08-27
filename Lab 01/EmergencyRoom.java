@@ -136,17 +136,20 @@ class EmergencyRoom {
     // and modify your chosen data structure (if needed)
     //
     // write your answer here
+    int index = 0;
     // Searches for the patient
     for (int i = 1; i <= BinaryHeapSize; i++) {
       if (patientList.get(i).getName().equals(patientName)) {
-        Patient patient = patientList.get(i); // patient to be updated
-        patient.updateEmergencyLvl(incEmergencyLvl);
-
-        // Fixes any violation to max heap property
-        shiftUp(i);
+        index = i;
         break; // Exits loop
       }
     }
+    
+    Patient patient = patientList.get(index); // patient to be updated
+    patient.updateEmergencyLvl(incEmergencyLvl);
+
+    // Fixes any violation to max heap property
+    shiftUp(index);
   }
 
   void Treat(String patientName) {
@@ -154,21 +157,24 @@ class EmergencyRoom {
     // remove him/her from your chosen data structure
     //
     // write your answer here
+    int index = 0;
     // Searches for the patient to be treated
     for (int i = 1; i <= BinaryHeapSize; i++) {
       if (patientList.get(i).getName().equals(patientName)) {
-        Patient patient = patientList.get(i); // patient to be treated
-
-        // Sets patient emergency level to 101 to override any existing level, including 100
-        patient.setEmergencyLvl(101);
-
-        // Fixes any violation to max heap property
-        shiftUp(i);
-        // Removes treated patient
-        ExtractMax();
+        index = i;
         break;
       }
     }
+
+    Patient patient = patientList.get(index); // patient to be treated
+
+    // Sets patient emergency level to 101 to override any existing level, including level 100
+    patient.setEmergencyLvl(101);
+
+    // Fixes any violation to max heap property
+    shiftUp(index);
+    // Removes treated patient
+    ExtractMax();
   }
 
   String Query() {
