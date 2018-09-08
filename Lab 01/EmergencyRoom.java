@@ -11,6 +11,7 @@ class EmergencyRoom {
   // if needed, declare a private data structure here that
   // is accessible to all methods in this class
   private ArrayList<Patient> patientList;
+  private HashMap<String, Integer> patientsMap; // for storing patient name and its index in the patientList
   private int BinaryHeapSize;
 
   public EmergencyRoom() {
@@ -18,6 +19,7 @@ class EmergencyRoom {
     //
     // write your answer here
     patientList = new ArrayList<>();
+    patientsMap = new HashMap<>();
     Patient dummy = new Patient("DUMMY", 0, BinaryHeapSize);
     patientList.add(dummy);
     BinaryHeapSize = 0;
@@ -29,11 +31,15 @@ class EmergencyRoom {
 
   int right(int i) { return (i<<1) + 1; } // shortcut for 2*i + 1
 
-  void swap(int i) {
+  void swap(int i, int parentIndex) {
+    // Updates the hashmap value
+    patientsMap.put(patientList.get(i).getName(), parentIndex);
+    patientsMap.put(patientList.get(parentIndex).getName(), i);
+
     // Swap current node with its parent node
     Patient temp = patientList.get(i);
-    patientList.set(i, patientList.get(parent(i)));
-    patientList.set(parent(i), temp);
+    patientList.set(i, patientList.get(parentIndex));
+    patientList.set(parentIndex, temp);
   }
 
   void shiftUp(int i) {
@@ -45,7 +51,7 @@ class EmergencyRoom {
       }
 
       if (isSwap) {
-        swap(i);
+        swap(i, parent(i));
       }
 
       i = parent(i); // update the index
@@ -94,9 +100,7 @@ class EmergencyRoom {
       // Swaps node with its child that has higher emergency level or earlier arrival
       // (if same emergency level)
       if (max_id != i) {
-        Patient temp = patientList.get(i);
-        patientList.set(i, patientList.get(max_id));
-        patientList.set(max_id, temp);
+        swap(max_id, i);
         i = max_id;
       } else
         break;
@@ -105,6 +109,8 @@ class EmergencyRoom {
 
   void ExtractMax() {
     patientList.set(1, patientList.get(BinaryHeapSize));
+    // Change the heap index 
+    patientsMap.put(patientList.get(1).getName(), 1);
     BinaryHeapSize--; // virtual decrease
     shiftDown(1);
   }
@@ -121,9 +127,11 @@ class EmergencyRoom {
     Patient newPatient = new Patient(patientName, emergencyLvl, BinaryHeapSize);
     
     if (BinaryHeapSize >= patientList.size()) {
+      patientsMap.put(patientName, patientList.size()); // Adds patient into the hashmap
       patientList.add(newPatient);
     } else {
       patientList.set(BinaryHeapSize, newPatient);
+      patientsMap.put(patientName, BinaryHeapSize); // Adds patient into the hashmap   
     }
 
     // Fix any violation to max heap property
@@ -136,14 +144,7 @@ class EmergencyRoom {
     // and modify your chosen data structure (if needed)
     //
     // write your answer here
-    int index = 0;
-    // Searches for the patient
-    for (int i = 1; i <= BinaryHeapSize; i++) {
-      if (patientList.get(i).getName().equals(patientName)) {
-        index = i;
-        break; // Exits loop
-      }
-    }
+    int index = patientsMap.get(patientName);
     
     Patient patient = patientList.get(index); // patient to be updated
     patient.updateEmergencyLvl(incEmergencyLvl);
@@ -157,14 +158,7 @@ class EmergencyRoom {
     // remove him/her from your chosen data structure
     //
     // write your answer here
-    int index = 0;
-    // Searches for the patient to be treated
-    for (int i = 1; i <= BinaryHeapSize; i++) {
-      if (patientList.get(i).getName().equals(patientName)) {
-        index = i;
-        break;
-      }
-    }
+    int index = patientsMap.get(patientName);
 
     Patient patient = patientList.get(index); // patient to be treated
 
