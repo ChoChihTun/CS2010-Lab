@@ -53,7 +53,6 @@ class PatientNames {
 
     // --------------------------------------------
     T.delete(patientName);
-    T.inorder();
 
     // --------------------------------------------
   }
@@ -68,6 +67,7 @@ class PatientNames {
 
     // --------------------------------------------
     ans = T.countNames(START, END, gender);
+    T.inorder();
 
 
     // --------------------------------------------
@@ -272,7 +272,6 @@ class AVLTree {
 
   // Fix one of the 4 possible case
   private AVLTreeVertex rebalance(AVLTreeVertex T, int balanceFactor) {
-
     if (balanceFactor == 2) {
       // Left Right case
       if (getBalanceFactor(T.left) == -1) {
@@ -282,6 +281,7 @@ class AVLTree {
       // Left Left case
       return rotateRight(T);
     } else { // BalanceFactor = -2
+
       // Right left case
       if (getBalanceFactor(T.right) == 1) {
         T.right = rotateRight(T.right); // Next rotation combined with right right case
@@ -293,6 +293,9 @@ class AVLTree {
     }
 
   private AVLTreeVertex rotateLeft(AVLTreeVertex T) {
+    if (T.left == null)
+      return T;
+
     AVLTreeVertex w = T.right;
     w.parent = T.parent;
     T.parent = w;
@@ -309,6 +312,9 @@ class AVLTree {
   }
 
   private AVLTreeVertex rotateRight(AVLTreeVertex T) {
+    if (T.right == null)
+      return T;
+
     AVLTreeVertex w = T.left;
     w.parent = T.parent;
     T.parent = w;
@@ -337,18 +343,44 @@ class AVLTree {
   }
 
 
-  // overloaded method to perform inorder traversal
-  private void inorder(AVLTreeVertex T) {
+  // overloaded method to perform inorder traversal to count names
+  private int countNames(AVLTreeVertex T, String START, String END, int gender) {
+    int count = 0;
     if (T == null)
-      return;
-    inorder(T.left); // recursively go to the left
-    System.out.printf("%s -> %d\n", T.key.getName(), T.height); // visit this AVL Tree node
-    inorder(T.right); // recursively go to the right
+      return 0;
+
+    count += countNames(T.left, START, END, gender); // recursively go to the left
+    
+
+    // If the current name is in the interval
+    if ((T.key.getName().compareTo(START) > 0 || T.key.getName().compareTo(START) == 0) && T.key.getName().compareTo(END) < 0) {
+      // Checks the gender
+      if (T.key.getGender() == gender || gender == 0)
+        count++;
+    }
+
+    count += countNames(T.right, START, END, gender); // recursively go to the right
+
+    return count;
+  }
+
+  // public method called to perform inorder traversal to count names
+  public int countNames(String START, String END, int gender) {
+    return countNames(root, START, END, gender);
   }
 
   // public method called to perform inorder traversal
   public void inorder() {
     inorder(root);
-    System.out.println();
+    System.out.println(" Root: " + root.key.getName());
+  }
+
+  // overloaded method to perform inorder traversal
+  protected void inorder(AVLTreeVertex T) {
+    if (T == null)
+      return;
+    inorder(T.left); // recursively go to the left
+    System.out.printf(" %s", T.key.getName()); // visit this BST node
+    inorder(T.right); // recursively go to the right
   }
 }
