@@ -67,8 +67,6 @@ class PatientNames {
 
     // --------------------------------------------
     ans = T.countNames(START, END, gender);
-    T.inorder();
-
 
     // --------------------------------------------
 
@@ -369,18 +367,4 @@ class AVLTree {
     return countNames(root, START, END, gender);
   }
 
-  // public method called to perform inorder traversal
-  public void inorder() {
-    inorder(root);
-    System.out.println(" Root: " + root.key.getName());
-  }
-
-  // overloaded method to perform inorder traversal
-  protected void inorder(AVLTreeVertex T) {
-    if (T == null)
-      return;
-    inorder(T.left); // recursively go to the left
-    System.out.printf(" %s", T.key.getName()); // visit this BST node
-    inorder(T.right); // recursively go to the right
-  }
 }
