@@ -236,7 +236,9 @@ class AVLTree {
     } else {
       // Vertex to be deleted
       if (T.left == null && T.right == null) {
+        AVLTreeVertex parent = T.parent;
         T = null;
+        balanceAVL(parent);
       } else if (T.left == null && T.right != null) {
         T.right.parent = T.parent;
         T = T.right;
@@ -294,7 +296,7 @@ class AVLTree {
 
   // Use postOrder transversal to update size
   private void updateSize(AVLTreeVertex T) {
-    if (node == null)
+    if (T == null)
       return;
 
     updateSize(T.left);
@@ -314,6 +316,7 @@ class AVLTree {
 
   // Fix one of the 4 possible case
   private AVLTreeVertex rebalance(AVLTreeVertex T, int balanceFactor) {
+
     if (balanceFactor == 2) {
       // Left Right case
       if (getBalanceFactor(T.left) == -1) {
@@ -375,7 +378,15 @@ class AVLTree {
 
   // Get balance factor for vertex T
   private int getBalanceFactor(AVLTreeVertex T) {
-    return T.left.height - T.right.height;
+    if (T.left == null && T.right != null) {
+      return 0 - T.right.height;
+    } else if (T.left != null && T.right == null) {
+      return T.left.height;
+    } else if (T.left == null && T.right == null) {
+      return 0;
+    } else {
+      return T.left.height - T.right.height;
+    }
   }
 
   // Get height of vertex T
