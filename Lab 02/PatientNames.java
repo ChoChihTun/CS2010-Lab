@@ -3,7 +3,7 @@ import java.io.*;
 
 // write your matric number here: A0154907Y
 // write your name here: Cho Chih Tun
-// write list of collaborators here: Referred to the BSTDemo file
+// write list of collaborators here: Referred to the BSTDemo file and lecture note
 // year 2018 hash code: wrMQ8UMcPU5q7F4UPNhT (do NOT delete this line)
 
 class PatientNames {
@@ -123,6 +123,25 @@ class Patient implements Comparable<Patient> {
   public int compareTo(Patient key) {
     return this.name.compareTo(key.getName());
   }
+
+  @Override
+  public boolean equals(Object v) {
+    if (this == v) {
+      return true;
+    }
+
+    if (!(v instanceof Patient)) {
+      return false;
+    }
+
+    Patient other = (Patient) v;
+
+    if (this.name.equals(other.getName()) && this.gender == other.getGender()) {
+      return true;
+    }
+
+    return false;
+  }
 }
 
 // Represents each vertex in the AVL tree.
@@ -131,10 +150,12 @@ class AVLTreeVertex {
     key = patient;
     parent = left = right = null;
     height = 0;
+    size = 1; //Starting only has itself so = 1
   }
   public AVLTreeVertex parent, left, right;
   public Patient key;
   public int height;
+  public int size; // How many children I have, including me
 }
 
 class AVLTree {
@@ -152,7 +173,7 @@ class AVLTree {
   private AVLTreeVertex search(AVLTreeVertex T, Patient v) {
     if (T == null)
       return null; // not found
-    else if (T.key == v)
+    else if (T.key.equals(v)) // USE EQUAL --> oVERRIDE
       return T; // found
     else if (T.key.compareTo(v) < 0)
       return search(T.right, v); // search to the right
@@ -331,7 +352,7 @@ class AVLTree {
 
   // Get balance factor for vertex T
   private int getBalanceFactor(AVLTreeVertex T) {
-    return getHeight(T.left) - getHeight(T.right);
+    return T.left.height - T.right.height;
   }
 
   // Get height of vertex T
