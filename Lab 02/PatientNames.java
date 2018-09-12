@@ -252,7 +252,7 @@ class AVLTree {
     }
 
     if (T != null)
-      balanceAVL(T);
+      return balanceAVL(T);
 
     return T; //Updated Tree
   }
@@ -286,7 +286,30 @@ class AVLTree {
     if (balanceFactor < -1 || balanceFactor > 1) {
       return rebalance(T, balanceFactor);
     }
+
+    updateSize(root);
+
     return T;
+  }
+
+  // Use postOrder transversal to update size
+  private void updateSize(AVLTreeVertex T) {
+    if (node == null)
+      return;
+
+    updateSize(T.left);
+
+    updateSize(T.right);
+
+    if (T.right == null && T.left == null) {
+      T.size = 1;
+    } else if (T.right == null && T.left != null) {
+      T.size = 2;
+    } else if (T.right != null && T.left == null) {
+      T.size = 2;
+    } else {
+      T.size = T.left.size + T.right.size + 1;
+    }
   }
 
   // Fix one of the 4 possible case
