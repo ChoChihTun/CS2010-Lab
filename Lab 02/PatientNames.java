@@ -150,14 +150,12 @@ class AVLTreeVertex {
     key = patient;
     parent = left = right = null;
     height = 0;
-    size = 0; 
-    maleCount = 0;
+    size = 1; 
   }
   public AVLTreeVertex parent, left, right;
   public Patient key;
   public int height;
   public int size; // How many children I have, including me
-  public int maleCount;
 }
 
 class AVLTree {
@@ -321,34 +319,12 @@ class AVLTree {
 
     if (T.right == null && T.left == null) {
       T.size = 1;
-      if (T.key.getGender() == 1)
-        T.maleCount = 1;
-      else
-        T.maleCount = 0;
     } else if (T.right == null && T.left != null) {
       T.size = 2;
-      if (T.key.getGender() == 1 && T.left.key.getGender() == 1) {
-        T.maleCount = 2;
-      } else if ((T.key.getGender() == 1 && T.left.key.getGender() == 2) || (T.key.getGender() == 2 && T.left.key.getGender() == 1)) {
-        T.maleCount = 1;
-      } else {
-        T.maleCount = 0;
-      }
     } else if (T.right != null && T.left == null) {
       T.size = 2;
-      if (T.key.getGender() == 1 && T.right.key.getGender() == 1) {
-        T.maleCount = 2;
-      } else if ((T.key.getGender() == 1 && T.right.key.getGender() == 2) || (T.key.getGender() == 2 && T.right.key.getGender() == 1)) {
-        T.maleCount = 1;
-      } else {
-        T.maleCount = 0;
-      }
     } else {
       T.size = T.left.size + T.right.size + 1;
-      if (T.key.getGender() == 1)
-        T.maleCount = T.left.maleCount + T.right.maleCount + 1;
-      else
-        T.maleCount = T.left.maleCount + T.right.maleCount;
     }
   }
 
@@ -497,9 +473,6 @@ class AVLTree {
     AVLTreeVertex firstValidVertix = getFirstVertex(root, START); // get first vertex within the interval
 
     int totalCount = getRank(lastValidVertix) - getRank(firstValidVertix);
-
-    // num of male
-    if (gender == 1) {
       
     }
   }
