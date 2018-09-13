@@ -467,13 +467,50 @@ class AVLTree {
     }
   }
 
+  private int countGender(AVLTreeVertex T, AVLTreeVertex last, int gender) {
+    if (T == null) 
+      return 0;
+
+    // Greater than the interval and has no left child
+    if (T.key.compareTo(last.key) > 0 && T.left == null) {
+      return 0;
+    }
+
+    int count = 0;
+    // T is greater than the interval but has left child (Might be in interval)
+    if (T.key.compareTo(last.key) > 0 && T.left != null) {
+      return count + countGender(T.left, last, gender);
+    }  else {  
+    
+    // In interval
+    if (!(T.key.compareTo(last.key) > 0) && T.key.getGender() == gender)
+      count++;
+
+    if (T.right != null)
+      count += countGender(T.right, last, gender);
+
+    if (T.left != null)
+      count += countGender(T.left, last, gender);
+    
+    // Only transverse up if is in left sub tree
+    if (T.key.compareTo(root.key) < 0)
+      count += countGender(T.parent, last, gender);
+    
+    return count;
+    }
+  }
+
   // public method called to perform inorder traversal to count names
   public int countNames(String START, String END, int gender) {
     AVLTreeVertex lastValidVertix = getLastVertex(root, END); // get last vertex within the interval
     AVLTreeVertex firstValidVertix = getFirstVertex(root, START); // get first vertex within the interval
 
     int totalCount = getRank(lastValidVertix) - getRank(firstValidVertix);
-      
+
+    if (gender == 0) {
+      return totalCount;
+    } else {
+      return countGender(firstValidVertix, lastValidVertix, gender);
     }
   }
 }
