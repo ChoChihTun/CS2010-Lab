@@ -150,12 +150,14 @@ class AVLTreeVertex {
     key = patient;
     parent = left = right = null;
     height = 0;
-    size = 1; //Starting only has itself so = 1
+    size = 0; 
+    maleCount = 0;
   }
   public AVLTreeVertex parent, left, right;
   public Patient key;
   public int height;
   public int size; // How many children I have, including me
+  public int maleCount;
 }
 
 class AVLTree {
@@ -194,6 +196,21 @@ class AVLTree {
   // Searches for minimum key value in AVL tree
   public Patient findMin() {
     return findMin(root);
+  }
+
+  // overloaded recursive method to perform findMax
+  private Patient findMax(AVLTreeVertex T) {
+    if (T == null)
+      throw new NoSuchElementException("AVL Tree is empty, no maximum");
+    else if (T.right == null)
+      return T.key; // this is the max
+    else
+      return findMax(T.right); // go to the right
+  }
+
+  // Searches for maximum key value in AVL tree
+  public Patient findMax() {
+    return findMax(root);
   }
 
   // overloaded recursive method to find successor
@@ -262,6 +279,7 @@ class AVLTree {
   // method called to insert a new key with value v into AVL Tree
   public void insert(Patient v) {
     root = insert(root, v);
+    updateSize(root);
   }  
   
   // overloaded recursive method to perform insertion of new vertex into AVL Tree
@@ -289,8 +307,6 @@ class AVLTree {
       return rebalance(T, balanceFactor);
     }
 
-    updateSize(root);
-
     return T;
   }
 
@@ -305,12 +321,53 @@ class AVLTree {
 
     if (T.right == null && T.left == null) {
       T.size = 1;
+      if (T.key.getGender() == 1)
+        T.maleCount = 1;
+      else
+        T.maleCount = 0;
     } else if (T.right == null && T.left != null) {
       T.size = 2;
+      if (T.key.getGender() == 1 && T.left.key.getGender() == 1) {
+        T.maleCount = 2;
+      } else if ((T.key.getGender() == 1 && T.left.key.getGender() == 2) || (T.key.getGender() == 2 && T.left.key.getGender() == 1)) {
+        T.maleCount = 1;
+      } else {
+        T.maleCount = 0;
+      }
     } else if (T.right != null && T.left == null) {
       T.size = 2;
+      if (T.key.getGender() == 1 && T.right.key.getGender() == 1) {
+        T.maleCount = 2;
+      } else if ((T.key.getGender() == 1 && T.right.key.getGender() == 2) || (T.key.getGender() == 2 && T.right.key.getGender() == 1)) {
+        T.maleCount = 1;
+      } else {
+        T.maleCount = 0;
+      }
     } else {
       T.size = T.left.size + T.right.size + 1;
+      if (T.key.getGender() == 1)
+        T.maleCount = T.left.maleCount + T.right.maleCount + 1;
+      else
+        T.maleCount = T.left.maleCount + T.right.maleCount;
+    }
+  }
+
+  private int getRank(AVLTreeVertex T) {
+    if (T == null) 
+      return 0;
+
+    // right of root
+    if (root.key.compareTo(T.key) > 0) {
+      if (T.left == null) 
+        return 1 + getRank(T.parent);
+      else
+        return T.left.size + 1 + getRank(T.parent);
+    } else {
+      // Left of root or root
+      if (T.left == null)
+        return 1;
+      else
+        return T.left.size + 1;
     }
   }
 
@@ -395,31 +452,55 @@ class AVLTree {
     else return Math.max(getHeight(T.left), getHeight(T.right)) + 1;
   }
 
-
-  // overloaded method to perform inorder traversal to count names
-  private int countNames(AVLTreeVertex T, String START, String END, int gender) {
-    int count = 0;
-    if (T == null)
-      return 0;
-
-    count += countNames(T.left, START, END, gender); // recursively go to the left
-    
-
-    // If the current name is in the interval
-    if ((T.key.getName().compareTo(START) > 0 || T.key.getName().compareTo(START) == 0) && T.key.getName().compareTo(END) < 0) {
-      // Checks the gender
-      if (T.key.getGender() == gender || gender == 0)
-        count++;
+  private AVLTreeVertex getLastVertex(AVLTreeVertex T, String END) {
+    // leaf vertex is reached but greater than END
+    if (T.left == null && T.right == null && T.key.getName().compareTo(END) > 0) {
+      return null;
     }
 
-    count += countNames(T.right, START, END, gender); // recursively go to the right
+    // vertex's patient name is the largest name that is smaller than or equal to END
+    if ((!(T.key.getName().compareTo(END) > 0) && T.right == null)
+        || !(T.key.getName().compareTo(END) > 0) && T.right.key.getName().compareTo(END) > 0) {
+          return T;
+        }
+    
+    if (T.key.getName().compareTo(END) < 0) {
+      return getLastVertex(T.right, END);
+    } else {
+      return getLastVertex(T.left, END);
+    }
+  }
 
-    return count;
+  private AVLTreeVertex getFirstVertex(AVLTreeVertex T, String START) {
+    // leaf vertex is reached but smaller than START
+    if (T.left == null && T.right == null && T.key.getName().compareTo(START) < 0) {
+      return null;
+    }
+
+    // vertex's patient name is the smallest name that is greater than or equal to
+    // START
+    if ((!(T.key.getName().compareTo(START) < 0) && T.left == null)
+        || !(T.key.getName().compareTo(START) < 0) && T.left.key.getName().compareTo(START) < 0) {
+      return T;
+    }
+
+    if (T.key.getName().compareTo(START) < 0) {
+      return getFirstVertex(T.left, START);
+    } else {
+      return getFirstVertex(T.right, START);
+    }
   }
 
   // public method called to perform inorder traversal to count names
   public int countNames(String START, String END, int gender) {
-    return countNames(root, START, END, gender);
-  }
+    AVLTreeVertex lastValidVertix = getLastVertex(root, END); // get last vertex within the interval
+    AVLTreeVertex firstValidVertix = getFirstVertex(root, START); // get first vertex within the interval
 
+    int totalCount = getRank(lastValidVertix) - getRank(firstValidVertix);
+
+    // num of male
+    if (gender == 1) {
+      
+    }
+  }
 }
