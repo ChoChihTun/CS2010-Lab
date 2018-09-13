@@ -317,7 +317,7 @@ class AVLTree {
   // Fix one of the 4 possible case
   private AVLTreeVertex rebalance(AVLTreeVertex T, int balanceFactor) {
 
-    if (balanceFactor == 2) {
+    if (balanceFactor >= 2) {
       // Left Right case
       if (getBalanceFactor(T.left) == -1) {
         T.left = rotateLeft(T.left); // Next rotation combined with left left case
