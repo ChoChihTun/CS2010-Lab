@@ -62,8 +62,10 @@ class PatientNames {
     int gender = genderMap.get(patientName);
     if (gender == 1) {
       maleTree.delete(patientName);
+      genderMap.remove(patientName);
     } else {
       femaleTree.delete(patientName);
+      genderMap.remove(patientName);
     }
     // --------------------------------------------
   }
@@ -176,7 +178,7 @@ class AVLTreeVertex {
     key = patient;
     parent = left = right = null;
     height = 0;
-    size = 1; //Starting only has itself so = 1
+    size = 0; //Starting only has itself so = 1
   }
   public AVLTreeVertex parent, left, right;
   public Patient key;
@@ -247,6 +249,7 @@ class AVLTree {
   // method called to remove an existing patient in AVL Tree
   public void delete(String name) {
     root = delete(root, name);
+    updateSize(root);
   }
 
   // overloaded recursive method to perform deletion of an existing vertex in AVL Tree
@@ -288,6 +291,7 @@ class AVLTree {
   // method called to insert a new key with value v into AVL Tree
   public void insert(Patient v) {
     root = insert(root, v);
+    updateSize(root);
   }  
   
   // overloaded recursive method to perform insertion of new vertex into AVL Tree
@@ -314,8 +318,6 @@ class AVLTree {
     if (balanceFactor < -1 || balanceFactor > 1) {
       return rebalance(T, balanceFactor);
     }
-
-    updateSize(root);
 
     return T;
   }
@@ -421,7 +423,67 @@ class AVLTree {
     else return Math.max(getHeight(T.left), getHeight(T.right)) + 1;
   }
 
+  private int getRank(AVLTreeVertex T) {
+    if (T == null) 
+      return 0;
 
+    // right of root
+    if (T.key.compareTo(root.key) > 0) {
+      if (T.left == null) 
+        return 1 + getRank(T.parent);
+      else
+        return T.left.size + 1 + getRank(T.parent);
+    } else {
+      // Left of root or root
+      if (T.left == null)
+        return 1;
+      else
+        return T.left.size + 1;
+    }
+  }
+
+  // Gets largest vertex in the interval
+  private AVLTreeVertex getLastVertex(AVLTreeVertex T, String END) {
+    // leaf vertex is reached but greater than END
+    if (T.left == null && T.right == null && T.key.getName().compareTo(END) > 0) {
+      return null;
+    }
+
+    // vertex's patient name is the largest name that is smaller than or equal to END
+    if ((!(T.key.getName().compareTo(END) > 0) && T.right == null)
+        || !(T.key.getName().compareTo(END) > 0) && T.right.key.getName().compareTo(END) > 0) {
+          return T;
+        }
+    
+    if (T.key.getName().compareTo(END) < 0) {
+      return getLastVertex(T.right, END);
+    } else {
+      return getLastVertex(T.left, END);
+    }
+  }
+
+  // Gets smallest vertex in the interval
+  private AVLTreeVertex getFirstVertex(AVLTreeVertex T, String START) {
+    // leaf vertex is reached but smaller than START
+    if (T.left == null && T.right == null && T.key.getName().compareTo(START) < 0) {
+      return null;
+    }
+
+    // vertex's patient name is the smallest name that is greater than or equal to
+    // START
+    if ((!(T.key.getName().compareTo(START) < 0) && T.left == null)
+        || !(T.key.getName().compareTo(START) < 0) && T.left.key.getName().compareTo(START) < 0) {
+      return T;
+    }
+
+    if (T.key.getName().compareTo(START) > 0) {
+      return getFirstVertex(T.left, START);
+    } else {
+      return getFirstVertex(T.right, START);
+    }
+  }
+
+  /*
   // overloaded method to perform inorder traversal to count names
   private int countNames(AVLTreeVertex T, String START, String END) {
     int count = 0;
@@ -445,7 +507,23 @@ class AVLTree {
   public int countNames(String START, String END) {
     return countNames(root, START, END);
   }
+  */
 
+// public method called to perform inorder traversal to count names
+  public int countNames(String START, String END) {
+    if (root == null) {
+      return 0;
+    }
+
+    AVLTreeVertex lastValidVertix = getLastVertex(root, END); // get last vertex within the interval
+    AVLTreeVertex firstValidVertix = getFirstVertex(root, START); // get first vertex within the interval
+    System.out.println("FIrst: " + firstValidVertix.key.getName());
+    System.out.println("Last: " + lastValidVertix.key.getName());
+
+    inorder();
+    System.out.println(root.key.getName());
+    return getRank(lastValidVertix) - getRank(firstValidVertix);
+  }
 
   public void inorder() {
     inorder(root);
@@ -458,7 +536,7 @@ class AVLTree {
       return;
 
     inorder(T.left); // recursively go to the left
-    System.out.println("Name: " + T.key.getName()); // visit this BST node
+    System.out.println("Name: " + T.key.getName() + "-> Size: " + T.size); // visit this BST node
     inorder(T.right); // recursively go to the right
 
   }
