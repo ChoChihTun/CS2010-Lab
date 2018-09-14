@@ -41,8 +41,10 @@ class PatientNames {
     Patient newPatient = new Patient(patientName, gender);
     if (gender == 1) {
       maleTree.insert(newPatient);
+      genderMap.put(patientName, 1);
     } else {
       femaleTree.insert(newPatient);
+      genderMap.put(patientName, 2);
     }
     // --------------------------------------------
   }
@@ -486,7 +488,7 @@ class AVLTree {
       return getFirstVertex(T.right, START);
     }
   }
-/*
+
   // public method called to perform inorder traversal to count names
   public int countNames(String START, String END) {
     if (root == null) {
@@ -501,8 +503,9 @@ class AVLTree {
     inorder();
     return getRank(lastValidVertix) - getRank(firstValidVertix);
     }
-*/
 
+
+/*
   // overloaded method to perform inorder traversal to count names
   private int countNames(AVLTreeVertex T, String START, String END) {
     int count = 0;
@@ -527,6 +530,7 @@ class AVLTree {
   public int countNames(String START, String END) {
     return countNames(root, START, END);
   }
+  */
 
     // public method called to perform inorder traversal
   public void inorder() {
@@ -540,9 +544,9 @@ class AVLTree {
       return;
 
     inorder(T.left); // recursively go to the left
-    inorder(T.right); // recursively go to the right
     System.out.println("Name: " + T.key.getName() + "-> Size: " + T.size); // visit this BST node
-  
+    inorder(T.right); // recursively go to the right
+
     } 
 
   }
