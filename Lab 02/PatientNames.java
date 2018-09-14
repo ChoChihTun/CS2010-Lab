@@ -11,14 +11,9 @@ class PatientNames {
   // is accessible to all methods in this class
   // --------------------------------------------
 
-  private AVLTree T;
-
-  //Patient class with name and gender
-  // store patient name in AVL tree by the name lexico
-
-  //Insert --> like AVL Tree then check for AVl property
-  //Delete --> Like AVL Tree then check for AVL property
-
+  private AVLTree maleTree;
+  private AVLTree femaleTree;
+  private HashMap<String, Integer> genderMap;
 
   // --------------------------------------------
 
@@ -28,7 +23,9 @@ class PatientNames {
     // write your answer here
 
     // --------------------------------------------
-    T = new AVLTree();
+    maleTree = new AVLTree();
+    femaleTree = new AVLTree();
+    genderMap = new HashMap<>();
 
 
     // --------------------------------------------
@@ -42,7 +39,11 @@ class PatientNames {
 
     // --------------------------------------------
     Patient newPatient = new Patient(patientName, gender);
-    T.insert(newPatient);
+    if (gender == 1) {
+      maleTree.insert(newPatient);
+    } else {
+      femaleTree.insert(newPatient);
+    }
     // --------------------------------------------
   }
 
@@ -52,8 +53,12 @@ class PatientNames {
     // write your answer here
 
     // --------------------------------------------
-    T.delete(patientName);
-
+    int gender = genderMap.get(patientName);
+    if (gender == 1) {
+      maleTree.delete(patientName);
+    } else {
+      femaleTree.delete(patientName);
+    }
     // --------------------------------------------
   }
 
@@ -66,7 +71,13 @@ class PatientNames {
     // write your answer here
 
     // --------------------------------------------
-    ans = T.countNames(START, END, gender);
+    if (gender == 1) {
+      ans = maleTree.countNames(START, END);
+    } else if (gender == 2) {
+      ans = femaleTree.countNames(START, END);
+    } else {
+      ans = maleTree.countNames(START, END) + femaleTree.countNames(START, END);
+    }
 
     // --------------------------------------------
 
@@ -150,7 +161,7 @@ class AVLTreeVertex {
     key = patient;
     parent = left = right = null;
     height = 0;
-    size = 1; 
+    size = 0; 
   }
   public AVLTreeVertex parent, left, right;
   public Patient key;
@@ -333,7 +344,7 @@ class AVLTree {
       return 0;
 
     // right of root
-    if (root.key.compareTo(T.key) > 0) {
+    if (root.key.compareTo(T.key) < 0) {
       if (T.left == null) 
         return 1 + getRank(T.parent);
       else
@@ -460,57 +471,44 @@ class AVLTree {
       return T;
     }
 
-    if (T.key.getName().compareTo(START) < 0) {
+    if (T.key.getName().compareTo(START) > 0) {
       return getFirstVertex(T.left, START);
     } else {
       return getFirstVertex(T.right, START);
     }
   }
 
-  private int countGender(AVLTreeVertex T, AVLTreeVertex last, int gender) {
-    if (T == null) 
-      return 0;
-
-    // Greater than the interval and has no left child
-    if (T.key.compareTo(last.key) > 0 && T.left == null) {
-      return 0;
-    }
-
-    int count = 0;
-    // T is greater than the interval but has left child (Might be in interval)
-    if (T.key.compareTo(last.key) > 0 && T.left != null) {
-      return count + countGender(T.left, last, gender);
-    }  else {  
-    
-    // In interval
-    if (!(T.key.compareTo(last.key) > 0) && T.key.getGender() == gender)
-      count++;
-
-    if (T.right != null)
-      count += countGender(T.right, last, gender);
-
-    if (T.left != null)
-      count += countGender(T.left, last, gender);
-    
-    // Only transverse up if is in left sub tree
-    if (T.key.compareTo(root.key) < 0)
-      count += countGender(T.parent, last, gender);
-    
-    return count;
-    }
-  }
-
   // public method called to perform inorder traversal to count names
-  public int countNames(String START, String END, int gender) {
+  public int countNames(String START, String END) {
+    if (root == null) {
+      return 0;
+    }
+
     AVLTreeVertex lastValidVertix = getLastVertex(root, END); // get last vertex within the interval
     AVLTreeVertex firstValidVertix = getFirstVertex(root, START); // get first vertex within the interval
+    System.out.println("FIrst: " + firstValidVertix.key.getName());
+    System.out.println("Last: " + lastValidVertix.key.getName());
 
-    int totalCount = getRank(lastValidVertix) - getRank(firstValidVertix);
-
-    if (gender == 0) {
-      return totalCount;
-    } else {
-      return countGender(firstValidVertix, lastValidVertix, gender);
+    inorder();
+    return getRank(lastValidVertix) - getRank(firstValidVertix);
     }
+
+
+    // public method called to perform inorder traversal
+  public void inorder() {
+    inorder(root);
+    System.out.println();
   }
-}
+
+  // overloaded method to perform inorder traversal
+  protected void inorder(AVLTreeVertex T) {
+    if (T == null)
+      return;
+
+    inorder(T.left); // recursively go to the left
+    inorder(T.right); // recursively go to the right
+    System.out.println("Name: " + T.key.getName() + "-> Size: " + T.size); // visit this BST node
+  
+    } 
+
+  }
