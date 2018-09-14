@@ -10,9 +10,9 @@ class PatientNames {
   // if needed, declare a private data structure here that
   // is accessible to all methods in this class
   // --------------------------------------------
-
-  private AVLTree T;
-
+  private AVLTree maleTree;
+  private AVLTree femaleTree;
+  private HashMap<String, Integer> genderMap;
   //Patient class with name and gender
   // store patient name in AVL tree by the name lexico
 
@@ -28,8 +28,9 @@ class PatientNames {
     // write your answer here
 
     // --------------------------------------------
-    T = new AVLTree();
-
+    maleTree = new AVLTree();
+    femaleTree = new AVLTree();
+    genderMap = new HashMap<>();
 
     // --------------------------------------------
   }
@@ -41,8 +42,14 @@ class PatientNames {
     // write your answer here
 
     // --------------------------------------------
-    Patient newPatient = new Patient(patientName, gender);
-    T.insert(newPatient);
+     Patient newPatient = new Patient(patientName, gender);
+    if (gender == 1) {
+      maleTree.insert(newPatient);
+      genderMap.put(patientName, 1);
+    } else {
+      femaleTree.insert(newPatient);
+      genderMap.put(patientName, 2);
+    }
     // --------------------------------------------
   }
 
@@ -52,8 +59,12 @@ class PatientNames {
     // write your answer here
 
     // --------------------------------------------
-    T.delete(patientName);
-
+    int gender = genderMap.get(patientName);
+    if (gender == 1) {
+      maleTree.delete(patientName);
+    } else {
+      femaleTree.delete(patientName);
+    }
     // --------------------------------------------
   }
 
@@ -66,8 +77,23 @@ class PatientNames {
     // write your answer here
 
     // --------------------------------------------
-    ans = T.countNames(START, END, gender);
-    T.inorder();
+    /*
+    if (gender == 1) {
+      ans = maleTree.countNames(START, END);
+    } else if (gender == 2) {
+      ans = femaleTree.countNames(START, END);
+    } else {
+      ans = maleTree.countNames(START, END) + femaleTree.countNames(START, END);
+    }
+    */
+    
+    if (gender == 1) {
+      ans = maleTree.countNames(START, END);
+    } else if (gender == 2) {
+      ans = femaleTree.countNames(START, END);
+    } else {
+      ans = maleTree.countNames(START, END) + femaleTree.countNames(START, END);
+    }
     // --------------------------------------------
 
     return ans;
@@ -397,29 +423,27 @@ class AVLTree {
 
 
   // overloaded method to perform inorder traversal to count names
-  private int countNames(AVLTreeVertex T, String START, String END, int gender) {
+  private int countNames(AVLTreeVertex T, String START, String END) {
     int count = 0;
     if (T == null)
       return 0;
 
-    count += countNames(T.left, START, END, gender); // recursively go to the left
+    count += countNames(T.left, START, END); // recursively go to the left
     
 
     // If the current name is in the interval
     if ((T.key.getName().compareTo(START) > 0 || T.key.getName().compareTo(START) == 0) && T.key.getName().compareTo(END) < 0) {
-      // Checks the gender
-      if (T.key.getGender() == gender || gender == 0)
         count++;
     }
 
-    count += countNames(T.right, START, END, gender); // recursively go to the right
+    count += countNames(T.right, START, END); // recursively go to the right
 
     return count;
   }
 
   // public method called to perform inorder traversal to count names
-  public int countNames(String START, String END, int gender) {
-    return countNames(root, START, END, gender);
+  public int countNames(String START, String END) {
+    return countNames(root, START, END);
   }
 
 
