@@ -423,22 +423,23 @@ class AVLTree {
     else return Math.max(getHeight(T.left), getHeight(T.right)) + 1;
   }
 
-  private int getRank(AVLTreeVertex T) {
-    if (T == null) 
+  private int getRank(AVLTreeVertex curr, AVLTreeVertex T) {
+    if (curr == null) 
       return 0;
 
-    // right of root
-    if (T.key.compareTo(root.key) > 0) {
-      if (T.left == null) 
-        return 1 + getRank(T.parent);
-      else
-        return T.left.size + 1 + getRank(T.parent);
-    } else {
-      // Left of root or root
-      if (T.left == null)
+    // Found the vertex T
+    if (curr.key.compareTo(T.key) == 0) {
+      if (curr.left == null)
         return 1;
       else
-        return T.left.size + 1;
+        return curr.left.size + 1;
+    } else if (curr.key.compareTo(T.key) > 0) {
+      return getRank(curr.left, T);
+    } else {
+      if (curr.left == null)
+        return 1 + getRank(curr.right, T);
+      else 
+        return curr.left.size + 1 + getRank(curr.right, T);
     }
   }
 
@@ -521,8 +522,8 @@ class AVLTree {
     System.out.println("Last: " + lastValidVertix.key.getName());
 
     inorder();
-    System.out.println(root.key.getName());
-    return getRank(lastValidVertix) - getRank(firstValidVertix);
+    System.out.println("Root: " + root.key.getName());
+    return getRank(root, lastValidVertix) - getRank(root, firstValidVertix) + 1;
   }
 
   public void inorder() {
@@ -536,7 +537,8 @@ class AVLTree {
       return;
 
     inorder(T.left); // recursively go to the left
-    System.out.println("Name: " + T.key.getName() + "-> Size: " + T.size); // visit this BST node
+    System.out.println("Name: " + T.key.getName() + "-> Size: " + T.size + "-> Rank: " + getRank(root, T)); // visit this BST
+                                                                                                      // node
     inorder(T.right); // recursively go to the right
 
   }
