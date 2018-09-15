@@ -79,18 +79,6 @@ class PatientNames {
     // write your answer here
 
     // --------------------------------------------
-    /*
-    if (gender == 1) {
-      ans = maleTree.countNames(START, END);
-    } else if (gender == 2) {
-      ans = femaleTree.countNames(START, END);
-    } else {
-      ans = maleTree.countNames(START, END) + femaleTree.countNames(START, END);
-    }
-    */
-
-    if (END.equals("MARIANA"))
-      System.out.println("START DEBUGG");
 
     if (gender == 1) {
       ans = maleTree.countNames(START, END);
