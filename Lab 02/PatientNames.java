@@ -88,7 +88,10 @@ class PatientNames {
       ans = maleTree.countNames(START, END) + femaleTree.countNames(START, END);
     }
     */
-    
+
+    if (END.equals("MARIANA"))
+      System.out.println("START DEBUGG");
+
     if (gender == 1) {
       ans = maleTree.countNames(START, END);
     } else if (gender == 2) {
@@ -334,9 +337,9 @@ class AVLTree {
     if (T.right == null && T.left == null) {
       T.size = 1;
     } else if (T.right == null && T.left != null) {
-      T.size = 2;
+      T.size = 1 + T.left.size;
     } else if (T.right != null && T.left == null) {
-      T.size = 2;
+      T.size = 1 + T.right.size;
     } else {
       T.size = T.left.size + T.right.size + 1;
     }
@@ -444,43 +447,53 @@ class AVLTree {
   }
 
   // Gets largest vertex in the interval
-  private AVLTreeVertex getLastVertex(AVLTreeVertex T, String END) {
-    // leaf vertex is reached but greater than END
-    if (T.left == null && T.right == null && T.key.getName().compareTo(END) > 0) {
-      return null;
-    }
+  private AVLTreeVertex getLastVertex(AVLTreeVertex T, String END, AVLTreeVertex sofar) {
+    int comparison = T.key.getName().compareTo(END);
 
-    // vertex's patient name is the largest name that is smaller than or equal to END
-    if ((!(T.key.getName().compareTo(END) > 0) && T.right == null)
-        || !(T.key.getName().compareTo(END) > 0) && T.right.key.getName().compareTo(END) > 0) {
-          return T;
-        }
-    
-    if (T.key.getName().compareTo(END) < 0) {
-      return getLastVertex(T.right, END);
+    if (T.left == null && T.right == null && comparison > 0)
+      return sofar;
+
+    if (comparison < 0) {
+      if (sofar == null || sofar.key.compareTo(T.key) < 0)
+        sofar = T;
+
+      if (T.right == null)
+        return sofar;
+      else
+        return getLastVertex(T.right, END, sofar);
     } else {
-      return getLastVertex(T.left, END);
+      if (T.left == null)
+        return sofar;
+      else    
+        return getLastVertex(T.left, END, sofar);
     }
   }
 
   // Gets smallest vertex in the interval
-  private AVLTreeVertex getFirstVertex(AVLTreeVertex T, String START) {
-    // leaf vertex is reached but smaller than START
-    if (T.left == null && T.right == null && T.key.getName().compareTo(START) < 0) {
-      return null;
+  private AVLTreeVertex getFirstVertex(AVLTreeVertex T, String START, AVLTreeVertex sofar) {
+    int comparison = T.key.getName().compareTo(START);
+    
+    if (T.left == null && T.right == null && comparison < 0)
+      return sofar;
+
+    if (comparison == 0) {
+      sofar = T;
+      return sofar;
     }
 
-    // vertex's patient name is the smallest name that is greater than or equal to
-    // START
-    if ((!(T.key.getName().compareTo(START) < 0) && T.left == null)
-        || !(T.key.getName().compareTo(START) < 0) && T.left.key.getName().compareTo(START) < 0) {
-      return T;
-    }
+    if (comparison > 0) {
+      if (sofar == null || sofar.key.compareTo(T.key) > 0)
+        sofar = T;
 
-    if (T.key.getName().compareTo(START) > 0) {
-      return getFirstVertex(T.left, START);
+      if (T.left == null)
+        return sofar;
+      else
+        return getFirstVertex(T.left, START, sofar);
     } else {
-      return getFirstVertex(T.right, START);
+      if (T.right == null)
+        return sofar;
+      else
+        return getFirstVertex(T.right, START, sofar);
     }
   }
 
@@ -516,13 +529,16 @@ class AVLTree {
       return 0;
     }
 
-    AVLTreeVertex lastValidVertix = getLastVertex(root, END); // get last vertex within the interval
-    AVLTreeVertex firstValidVertix = getFirstVertex(root, START); // get first vertex within the interval
-    System.out.println("FIrst: " + firstValidVertix.key.getName());
-    System.out.println("Last: " + lastValidVertix.key.getName());
+    AVLTreeVertex lastValidVertix = getLastVertex(root, END, null); // get last vertex within the interval
+    AVLTreeVertex firstValidVertix = getFirstVertex(root, START, null); // get first vertex within the interval
 
-    inorder();
-    System.out.println("Root: " + root.key.getName());
+    if (lastValidVertix == null || firstValidVertix == null)
+      return 0;
+      
+    // System.out.println("First: " + START + "-> " + firstValidVertix.key.getName());
+    // System.out.println("Last: " + END + "-> " + lastValidVertix.key.getName());
+
+    // System.out.println("Root: " + root.key.getName());
     return getRank(root, lastValidVertix) - getRank(root, firstValidVertix) + 1;
   }
 
