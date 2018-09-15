@@ -181,12 +181,12 @@ class AVLTreeVertex {
     key = patient;
     parent = left = right = null;
     height = 0;
-    size = 0; //Starting only has itself so = 1
+    size = 0;
   }
   public AVLTreeVertex parent, left, right;
   public Patient key;
   public int height;
-  public int size; // How many children I have, including me
+  public int size; 
 }
 
 class AVLTree {
@@ -259,10 +259,12 @@ class AVLTree {
   private AVLTreeVertex delete(AVLTreeVertex T, String name) {
     if (T == null) return T; // Cannot find the item to delete
 
-    if (T.key.getName().compareTo(name) < 0) {
+    int comparison = T.key.getName().compareTo(name);
+
+    if (comparison < 0) {
       // Searches right
       T.right = delete(T.right, name);
-    } else if (T.key.getName().compareTo(name) > 0) {
+    } else if (comparison > 0) {
       // Searches left
       T.left = delete(T.left, name);
     } else {
@@ -430,13 +432,15 @@ class AVLTree {
     if (curr == null) 
       return 0;
 
+    int comparison = curr.key.compareTo(T.key);
+
     // Found the vertex T
-    if (curr.key.compareTo(T.key) == 0) {
+    if (comparison == 0) {
       if (curr.left == null)
         return 1;
       else
         return curr.left.size + 1;
-    } else if (curr.key.compareTo(T.key) > 0) {
+    } else if (comparison > 0) {
       return getRank(curr.left, T);
     } else {
       if (curr.left == null)
@@ -497,32 +501,6 @@ class AVLTree {
     }
   }
 
-  /*
-  // overloaded method to perform inorder traversal to count names
-  private int countNames(AVLTreeVertex T, String START, String END) {
-    int count = 0;
-    if (T == null)
-      return 0;
-
-    count += countNames(T.left, START, END); // recursively go to the left
-    
-
-    // If the current name is in the interval
-    if ((T.key.getName().compareTo(START) > 0 || T.key.getName().compareTo(START) == 0) && T.key.getName().compareTo(END) < 0) {
-        count++;
-    }
-
-    count += countNames(T.right, START, END); // recursively go to the right
-
-    return count;
-  }
-
-  // public method called to perform inorder traversal to count names
-  public int countNames(String START, String END) {
-    return countNames(root, START, END);
-  }
-  */
-
 // public method called to perform inorder traversal to count names
   public int countNames(String START, String END) {
     if (root == null) {
@@ -535,28 +513,6 @@ class AVLTree {
     if (lastValidVertix == null || firstValidVertix == null)
       return 0;
       
-    // System.out.println("First: " + START + "-> " + firstValidVertix.key.getName());
-    // System.out.println("Last: " + END + "-> " + lastValidVertix.key.getName());
-
-    // System.out.println("Root: " + root.key.getName());
     return getRank(root, lastValidVertix) - getRank(root, firstValidVertix) + 1;
   }
-
-  public void inorder() {
-    inorder(root);
-    System.out.println();
-  }
-
-  // overloaded method to perform inorder traversal
-  protected void inorder(AVLTreeVertex T) {
-    if (T == null)
-      return;
-
-    inorder(T.left); // recursively go to the left
-    System.out.println("Name: " + T.key.getName() + "-> Size: " + T.size + "-> Rank: " + getRank(root, T)); // visit this BST
-                                                                                                      // node
-    inorder(T.right); // recursively go to the right
-
-  }
-
 }
