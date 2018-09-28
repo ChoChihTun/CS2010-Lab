@@ -19,6 +19,36 @@ Output:
 12
 11
 
+<<<<<<< HEAD
+=======
+Inorder:
+Name: B
+Name: C
+Name: F
+Name: G
+Name: H
+Name: J
+Name: K
+Name: M
+Name: O
+Name: P
+Name: R
+Name: S
+
+Name: B
+Name: C
+Name: F
+Name: H
+Name: J
+Name: K
+Name: M
+Name: O
+Name: P
+Name: R
+Name: S
+
+
+>>>>>>> Test
 
 1 E 1
 1 D 1
