@@ -13,12 +13,6 @@ class PatientNames {
   private AVLTree maleTree;
   private AVLTree femaleTree;
   private HashMap<String, Integer> genderMap;
-  //Patient class with name and gender
-  // store patient name in AVL tree by the name lexico
-
-  //Insert --> like AVL Tree then check for AVl property
-  //Delete --> Like AVL Tree then check for AVL property
-
 
   // --------------------------------------------
 
@@ -31,7 +25,6 @@ class PatientNames {
     maleTree = new AVLTree();
     femaleTree = new AVLTree();
     genderMap = new HashMap<>();
-
     // --------------------------------------------
   }
 
@@ -43,13 +36,13 @@ class PatientNames {
 
     // --------------------------------------------
      Patient newPatient = new Patient(patientName, gender);
-    if (gender == 1) {
+    if (gender == 1)
       maleTree.insert(newPatient);
-      genderMap.put(patientName, 1);
-    } else {
+    else 
       femaleTree.insert(newPatient);
-      genderMap.put(patientName, 2);
-    }
+
+    genderMap.put(patientName, gender);
+    
     // --------------------------------------------
   }
 
@@ -58,15 +51,13 @@ class PatientNames {
     //
     // write your answer here
 
-    // --------------------------------------------
-    int gender = genderMap.get(patientName);
-    if (gender == 1) {
+    // --------------------------------------------'
+    if (genderMap.get(patientName) == 1) 
       maleTree.delete(patientName);
-      genderMap.remove(patientName);
-    } else {
+    else
       femaleTree.delete(patientName);
-      genderMap.remove(patientName);
-    }
+
+    genderMap.remove(patientName);
     // --------------------------------------------
   }
 
@@ -121,45 +112,13 @@ class PatientNames {
 }
 
 // Represents patient in the system
-class Patient implements Comparable<Patient> {
-  private String name;
-  private int gender;
+class Patient {
+  public String name;
+  public int gender;
 
   Patient(String name, int gender) {
     this.name = name;
     this.gender = gender;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public int getGender() {
-    return gender;
-  }
-
-  @Override
-  public int compareTo(Patient key) {
-    return this.name.compareTo(key.getName());
-  }
-
-  @Override
-  public boolean equals(Object v) {
-    if (this == v) {
-      return true;
-    }
-
-    if (!(v instanceof Patient)) {
-      return false;
-    }
-
-    Patient other = (Patient) v;
-
-    if (this.name.equals(other.getName()) && this.gender == other.getGender()) {
-      return true;
-    }
-
-    return false;
   }
 }
 
@@ -169,7 +128,7 @@ class AVLTreeVertex {
     key = patient;
     parent = left = right = null;
     height = 0;
-    size = 0;
+    size = 1;
   }
   public AVLTreeVertex parent, left, right;
   public Patient key;
@@ -182,24 +141,6 @@ class AVLTree {
 
   public AVLTree() { root = null; }
 
-  // method called to search for a value v
-  public Patient search(Patient v) {
-    AVLTreeVertex res = search(root, v);
-    return res == null ? null : res.key;
-  }
-
-  // overloaded recursive method to perform search
-  private AVLTreeVertex search(AVLTreeVertex T, Patient v) {
-    if (T == null)
-      return null; // not found
-    else if (T.key.equals(v)) // USE EQUAL --> oVERRIDE
-      return T; // found
-    else if (T.key.compareTo(v) < 0)
-      return search(T.right, v); // search to the right
-    else
-      return search(T.left, v); // search to the left
-  }
-
   // overloaded recursive method to perform findMin
   private Patient findMin(AVLTreeVertex T) {
     if (T == null)
@@ -208,11 +149,6 @@ class AVLTree {
       return T.key; // this is the min
     else
       return findMin(T.left); // go to the left
-  }
-
-  // Searches for minimum key value in AVL tree
-  public Patient findMin() {
-    return findMin(root);
   }
 
   // overloaded recursive method to find successor
@@ -231,36 +167,27 @@ class AVLTree {
     }
   }
 
-  // public method to find successor to given value v in AVL Tree
-  public Patient successor(Patient v) {
-    AVLTreeVertex vPos = search(root, v);
-    return vPos == null ? null : successor(vPos);
-  }
-
   // method called to remove an existing patient in AVL Tree
   public void delete(String name) {
     root = delete(root, name);
-    updateSize(root);
   }
 
-  // overloaded recursive method to perform deletion of an existing vertex in AVL Tree
-  private AVLTreeVertex delete(AVLTreeVertex T, String name) {
+// overloaded recursive method to perform deletion of an existing vertex in AVL Tree
+  private AVLTreeVertex delete(AVLTreeVertex T, String v) {
     if (T == null) return T; // Cannot find the item to delete
 
-    int comparison = T.key.getName().compareTo(name);
+    int comparison = T.key.name.compareTo(v);
 
     if (comparison < 0) {
       // Searches right
-      T.right = delete(T.right, name);
+      T.right = delete(T.right, v);
     } else if (comparison > 0) {
       // Searches left
-      T.left = delete(T.left, name);
+      T.left = delete(T.left, v);
     } else {
       // Vertex to be deleted
       if (T.left == null && T.right == null) {
-        AVLTreeVertex parent = T.parent;
         T = null;
-        balanceAVL(parent);
       } else if (T.left == null && T.right != null) {
         T.right.parent = T.parent;
         T = T.right;
@@ -271,20 +198,21 @@ class AVLTree {
         // Has 2 children
         Patient successor = successor(T);
         T.key = successor;
-        T.right = delete(T.right, successor.getName()); // delete old successor
+        T.right = delete(T.right, successor.name); // delete old successor
       }
     }
 
-    if (T != null)
+    if (T != null) {
+      T = update(T);
       return balanceAVL(T);
+    }
 
     return T; //Updated Tree
   }
-    
+
   // method called to insert a new key with value v into AVL Tree
   public void insert(Patient v) {
     root = insert(root, v);
-    updateSize(root);
   }  
   
   // overloaded recursive method to perform insertion of new vertex into AVL Tree
@@ -292,7 +220,7 @@ class AVLTree {
     if (T == null)
       return new AVLTreeVertex(v); // insertion point is found
 
-    if (T.key.compareTo(v) < 0) { // search to the right
+    if (T.key.name.compareTo(v.name) < 0) { // search to the right
       T.right = insert(T.right, v);
       T.right.parent = T;
     } else { // search to the left
@@ -300,45 +228,18 @@ class AVLTree {
       T.left.parent = T;
     }
 
-    T.height = getHeight(T); // Update height of each node
-
-    return balanceAVL(T);
-  }
-
-  // Check for any violation to AVL with respect to vertex T
-  private AVLTreeVertex balanceAVL(AVLTreeVertex T) {
-    int balanceFactor = getBalanceFactor(T);
-    if (balanceFactor < -1 || balanceFactor > 1) {
-      return rebalance(T, balanceFactor);
-    }
+    T = update(T);
+    T = balanceAVL(T);
 
     return T;
   }
 
-  // Use postOrder transversal to update size
-  private void updateSize(AVLTreeVertex T) {
-    if (T == null)
-      return;
+  // Check for any violation to AVL with respect to vertex T
+  private AVLTreeVertex balanceAVL(AVLTreeVertex T) {
+    if (T == null) return T;
 
-    updateSize(T.left);
-
-    updateSize(T.right);
-
-    if (T.right == null && T.left == null) {
-      T.size = 1;
-    } else if (T.right == null && T.left != null) {
-      T.size = 1 + T.left.size;
-    } else if (T.right != null && T.left == null) {
-      T.size = 1 + T.right.size;
-    } else {
-      T.size = T.left.size + T.right.size + 1;
-    }
-  }
-
-  // Fix one of the 4 possible case
-  private AVLTreeVertex rebalance(AVLTreeVertex T, int balanceFactor) {
-
-    if (balanceFactor >= 2) {
+    int balanceFactor = getBalanceFactor(T);
+    if (balanceFactor == 2) {
       // Left Right case
       if (getBalanceFactor(T.left) == -1) {
         T.left = rotateLeft(T.left); // Next rotation combined with left left case
@@ -346,22 +247,20 @@ class AVLTree {
 
       // Left Left case
       return rotateRight(T);
-    } else { // BalanceFactor = -2
+    } else if (balanceFactor == -2) { // BalanceFactor = -2
 
       // Right left case
       if (getBalanceFactor(T.right) == 1) {
         T.right = rotateRight(T.right); // Next rotation combined with right right case
       }
-    
+
       // Right right case
       return rotateLeft(T);
-      }
-    }
-
-  private AVLTreeVertex rotateLeft(AVLTreeVertex T) {
-    if (T.left == null)
+    } else 
       return T;
-
+  }
+  
+  public AVLTreeVertex rotateLeft(AVLTreeVertex T){
     AVLTreeVertex w = T.right;
     w.parent = T.parent;
     T.parent = w;
@@ -371,16 +270,14 @@ class AVLTree {
     }
     w.left = T;
 
-    // Update height
-    T.height = getHeight(T);
-    w.height = getHeight(w);
+    // Update height and size
+    T = update(T);
+    w = update(w);
+
     return w;
-  }
+}
 
-  private AVLTreeVertex rotateRight(AVLTreeVertex T) {
-    if (T.right == null)
-      return T;
-
+  public AVLTreeVertex rotateRight(AVLTreeVertex T) {
     AVLTreeVertex w = T.left;
     w.parent = T.parent;
     T.parent = w;
@@ -390,117 +287,59 @@ class AVLTree {
     }
     w.right = T;
 
-    // Update height
-    T.height = getHeight(T);
-    w.height = getHeight(w);
+    // Update height and size
+    T = update(T);
+    w = update(w);
+
     return w;
   }
-  
+
+  public AVLTreeVertex update(AVLTreeVertex T) { // updates vertex height and size and returns it
+    T.size = getSize(T.left) + getSize(T.right) + 1;
+    T.height = Math.max(getHeight(T.left), getHeight(T.right)) + 1;
+    return T;
+  }
 
   // Get balance factor for vertex T
   private int getBalanceFactor(AVLTreeVertex T) {
-    if (T.left == null && T.right != null) {
-      return 0 - T.right.height;
-    } else if (T.left != null && T.right == null) {
-      return T.left.height;
-    } else if (T.left == null && T.right == null) {
-      return 0;
-    } else {
-      return T.left.height - T.right.height;
-    }
+    if (T == null) return 0;
+    else
+      return getHeight(T.left) - getHeight(T.right);
   }
-
-  // Get height of vertex T
+  
+  // get the height of vertex T
   private int getHeight(AVLTreeVertex T) {
-    if (T == null) return -1;
-    else return Math.max(getHeight(T.left), getHeight(T.right)) + 1;
-  }
-
-  private int getRank(AVLTreeVertex curr, AVLTreeVertex T) {
-    if (curr == null) 
+    if (T == null)
+      return -1;
+    else
+      return T.height;
+  } 
+  
+  // Gets size of vertex T
+  public int getSize(AVLTreeVertex T) {
+    if (T == null)
       return 0;
-
-    int comparison = curr.key.compareTo(T.key);
-
-    // Found the vertex T
-    if (comparison == 0) {
-      if (curr.left == null)
-        return 1;
-      else
-        return curr.left.size + 1;
-    } else if (comparison > 0) {
-      return getRank(curr.left, T);
-    } else {
-      if (curr.left == null)
-        return 1 + getRank(curr.right, T);
-      else 
-        return curr.left.size + 1 + getRank(curr.right, T);
-    }
+    return T.size;
   }
 
-  // Gets largest vertex in the interval
-  private AVLTreeVertex getLastVertex(AVLTreeVertex T, String END, AVLTreeVertex sofar) {
-    int comparison = T.key.getName().compareTo(END);
-
-    if (T.left == null && T.right == null && comparison > 0)
-      return sofar;
-
-    if (comparison < 0) {
-      if (sofar == null || sofar.key.compareTo(T.key) < 0)
-        sofar = T;
-
-      if (T.right == null)
-        return sofar;
-      else
-        return getLastVertex(T.right, END, sofar);
-    } else {
-      if (T.left == null)
-        return sofar;
-      else    
-        return getLastVertex(T.left, END, sofar);
-    }
+  // get the rank of name
+  private int getRank(AVLTreeVertex T, String name) {
+    if (T == null)
+      return 1; 
+    else if (T.key.name.equals(name))
+      return getSize(T.left) + 1;
+    else if (T.key.name.compareTo(name) < 0)
+      return getSize(T.left) + 1 + getRank(T.right, name);
+    else
+      return getRank(T.left, name);
   }
 
-  // Gets smallest vertex in the interval
-  private AVLTreeVertex getFirstVertex(AVLTreeVertex T, String START, AVLTreeVertex sofar) {
-    int comparison = T.key.getName().compareTo(START);
-    
-    if (T.left == null && T.right == null && comparison < 0)
-      return sofar;
-
-    if (comparison == 0) {
-      sofar = T;
-      return sofar;
-    }
-
-    if (comparison > 0) {
-      if (sofar == null || sofar.key.compareTo(T.key) > 0)
-        sofar = T;
-
-      if (T.left == null)
-        return sofar;
-      else
-        return getFirstVertex(T.left, START, sofar);
-    } else {
-      if (T.right == null)
-        return sofar;
-      else
-        return getFirstVertex(T.right, START, sofar);
-    }
-  }
-
-// public method called to perform inorder traversal to count names
+  // Count number of names in the interval
   public int countNames(String START, String END) {
     if (root == null) {
       return 0;
     }
-
-    AVLTreeVertex lastValidVertix = getLastVertex(root, END, null); // get last vertex within the interval
-    AVLTreeVertex firstValidVertix = getFirstVertex(root, START, null); // get first vertex within the interval
-
-    if (lastValidVertix == null || firstValidVertix == null)
-      return 0;
-      
-    return getRank(root, lastValidVertix) - getRank(root, firstValidVertix) + 1;
-  }
+    
+    return getRank(root, END) - getRank(root, START);
+    }
 }
