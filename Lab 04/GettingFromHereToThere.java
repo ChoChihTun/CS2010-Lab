@@ -4,7 +4,7 @@ import java.io.*;
 
 // write your matric number here: A0154907Y
 // write your name here: Cho Chih Tun
-// write list of collaborators here:
+// write list of collaborators here: Referred to the PrimDemo codes
 // year 2018 hash code: c3HL7hbuMVasJh2TEnnf (do NOT delete this line) <-- change this
 
 class GettingFromHereToThere {
@@ -15,7 +15,8 @@ class GettingFromHereToThere {
   // is accessible to all methods in this class
   // --------------------------------------------
 
-
+  private PriorityQueue<IntegerPair> pq;
+  private  ArrayList < Boolean > taken; 
 
   // --------------------------------------------
 
@@ -23,7 +24,7 @@ class GettingFromHereToThere {
     // Write necessary codes during construction;
     //
     // write your answer here
-
+    
 
 
   }
@@ -32,7 +33,27 @@ class GettingFromHereToThere {
     // write your answer here
     // you can leave this method blank if you do not need it
 
+  }
 
+  private void initialise(int vtx) {
+    taken = new ArrayList<Boolean>();
+    taken.addAll(Collections.nCopies(V, false));
+    pq = new PriorityQueue<IntegerPair>();
+    // take any vertex of the graph, for simplicity, vertex 0, to be included in the
+    // MST
+    process(vtx);
+  }
+
+
+  private void process(int vtx) {
+    taken.set(vtx, true);
+    for (int j = 0; j < AdjList.get(vtx).size(); j++) {
+      IntegerPair v = AdjList.get(vtx).get(j);
+
+      if (!taken.get(v.first())) {
+        pq.offer(new IntegerPair(v.second(), v.first())); // we sort by weight then by adjacent vertex
+      }
+    }
   }
 
   int Query(int source, int destination) {
@@ -42,8 +63,16 @@ class GettingFromHereToThere {
     // which has the highest effort rating in the easiest path from source to destination for the wheelchair bound
     //
     // write your answer here
-
-
+    initialise(source);
+    while (!pq.isEmpty()) { // we will do this until all V vertices are taken (or E = V-1 edges are taken)
+      IntegerPair front = pq.poll();
+      System.out.println(destination);
+      if (!taken.get(front.second())) { // we have not connected this vertex yet
+        if (front.first() > ans)
+          ans = front.first();
+        process(front.second());
+      }
+    }
 
     return ans;
   }
