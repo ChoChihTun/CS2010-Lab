@@ -18,29 +18,29 @@ class GettingFromHereToThere {
   private PriorityQueue<IntegerPair> pq;
   private  ArrayList < Boolean > taken; 
 
+  private ArrayList <HashMap<Integer, Integer>> results;
   // --------------------------------------------
 
   public GettingFromHereToThere() {
     // Write necessary codes during construction;
     //
     // write your answer here
-    
-
-
+    results = new ArrayList<>();
   }
 
   void PreProcess() {
     // write your answer here
     // you can leave this method blank if you do not need it
-
+    for (int i = 0; i < 10; i++) {
+      results.add(i, new HashMap<Integer, Integer>());
+    }
   }
 
   private void initialise(int vtx) {
     taken = new ArrayList<Boolean>();
     taken.addAll(Collections.nCopies(V, false));
     pq = new PriorityQueue<IntegerPair>();
-    // take any vertex of the graph, for simplicity, vertex 0, to be included in the
-    // MST
+
     process(vtx);
   }
 
@@ -63,16 +63,24 @@ class GettingFromHereToThere {
     // which has the highest effort rating in the easiest path from source to destination for the wheelchair bound
     //
     // write your answer here
+    
+    if (results.get(source).containsKey(destination)) {
+      return results.get(source).get(destination);
+    }
+
     initialise(source);
     while (!pq.isEmpty() && !taken.get(destination)) {
       IntegerPair front = pq.poll();
       if (!taken.get(front.second())) { // we have not connected this vertex yet
-        if (front.first() > ans)
+        if (front.first() > ans) {
           ans = front.first();
+          results.get(source).put(front.second(), ans);
+          if (front.second() < 10)
+            results.get(front.second()).put(source, ans);
+        }
         process(front.second());
       }
     }
-
     return ans;
   }
 
