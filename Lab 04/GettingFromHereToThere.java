@@ -64,9 +64,8 @@ class GettingFromHereToThere {
     //
     // write your answer here
     initialise(source);
-    while (!pq.isEmpty()) { // we will do this until all V vertices are taken (or E = V-1 edges are taken)
+    while (!pq.isEmpty() && !taken.get(destination)) {
       IntegerPair front = pq.poll();
-      System.out.println(destination);
       if (!taken.get(front.second())) { // we have not connected this vertex yet
         if (front.first() > ans)
           ans = front.first();
