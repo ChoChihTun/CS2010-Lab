@@ -70,7 +70,7 @@ class Bleeding {
     }
 
     if (junctions.get(s).get(t) <= k) {
-      ans = queries[s][t];
+      return queries[s][t];
     }
 
     // -------------------------------------------------------------------------
