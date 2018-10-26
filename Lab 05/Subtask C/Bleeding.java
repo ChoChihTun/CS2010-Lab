@@ -1,17 +1,18 @@
 // Copy paste this Java Template and save it as "Bleeding.java"
 import java.util.*;
 import java.io.*;
+import javafx.util.Pair;
 
 // write your matric number here: A0154907Y
 // write your name here: Cho Chih Tun
-// write list of collaborators here: 
+// write list of collaborators here: Referred to lecture 8 and 9
 // year 2018 hash code: psJ6yCZMN7uwQv79EtpQ (do NOT delete this line)
 
 class Bleeding {
   private int V; // number of vertices in the graph (number of junctions in Singapore map)
   private int Q; // number of queries
-  private Vector<Vector<IntegerPair>> AdjList; // the weighted graph (the Singapore map), the length of each edge (road)
-                                               // is stored here too, as the weight of edge
+
+  private Vector<Vector<IntegerPair>> AdjList; // the weighted graph (the Singapore map), the length of each edge (road) is stored here too, as the weight of edge
 
   // if needed, declare a private data structure here that
   // is accessible to all methods in this class
@@ -20,6 +21,14 @@ class Bleeding {
   private int[] D;
   private TreeSet<IntegerPair> pq;
   private int size;
+
+  // Stores a list of transformed graph with a specific source node
+  // Stores Pair <edge, level>
+
+  private ArrayList<Vector<Vector<Pair<IntegerPair, Integer>>>> GraphLists;
+
+  // For checking if a specific graph with source src has been transformed
+  private HashMap<Integer,Integer> sourceList;
 
   private int[][] queries;
   
@@ -30,6 +39,8 @@ class Bleeding {
     //
     // write your answer here
     MAX = Integer.MAX_VALUE;
+    GraphLists = new ArrayList(V);
+    sourceList = new HashMap<>();
   }
 
   void PreProcess() {
@@ -37,22 +48,26 @@ class Bleeding {
     //
     // write your answer here
     // -------------------------------------------------------------------------
-    size = Math.min(10, V); // query starting vertex size
-    queries = new int[size][V];
 
-    for (int i = 0; i < size; i++) {
-      for (int j = 0; j < V; j++) {
-        if (j == i) 
-          queries[i][j] = 0;
-        else 
-          queries[i][j] = -1;       }
-    }
 
-    // Loop through each source vertex for query
-    for (int i = 0; i < size; i++) {
-      initSSSP(i); // Initialise Dijkstra
-      Dijkstra(i);
-    }
+    // size = Math.min(10, V); // query starting vertex size
+    // queries = new int[size][V];
+
+    // for (int i = 0; i < size; i++) {
+    //   for (int j = 0; j < V; j++) {
+    //     if (j == i) 
+    //       queries[i][j] = 0;
+    //     else 
+    //       queries[i][j] = -1;       }
+    // }
+
+    // // Loop through each source vertex for query
+    // for (int i = 0; i < size; i++) {
+    //   initSSSP(i); // Initialise Dijkstra
+    //   Dijkstra(i);
+    // }
+
+
     // -------------------------------------------------------------------------
   }
 
@@ -69,6 +84,17 @@ class Bleeding {
     if (s == t)
       return 0;
 
+    // Transform graph if graph with the source has not been transformed
+    if (!sourceList.containsKey(s)) {
+      GraphLists.add(new Vector<Vector<Pair<IntegerPair, Integer>>>());
+      int size = GraphLists.size();
+      sourceList.put(s, size-1); // Stores the source and its position in GraphLists
+      for (int i = 0; i < V; i++)
+        GraphLists.get(size-1).add(new Vector<Pair<IntegerPair, Integer>>());
+
+      transformGraph(s, GraphLists.size()-1, 1);
+    }
+
     ans = queries[s][t];
 
     // -------------------------------------------------------------------------
@@ -79,43 +105,55 @@ class Bleeding {
   // You can add extra function if needed
   // --------------------------------------------
   
-  // Initialise Dijkstra Algo
-  private void initSSSP(int src) {
-    pq = new TreeSet<>();
-    D = new int[V];
-    for (int i = 0; i < V; i++)
-      D[i] = MAX;
-    D[src] = 0;
-  }
 
-  private void Dijkstra(int src) {
-    pq.add(new IntegerPair(src, 0)); // Adding the source node to PQ
-
-    while (!pq.isEmpty()) {
-      IntegerPair front = pq.pollFirst();
-      int u_idx = front.first();
-
-      // Checks if distance from src to u is currently the shortest
-      if (front.second() == D[u_idx]) {
-        // Iterate through neighbours of u
-        for (IntegerPair v : AdjList.get(u_idx)) {
-          int v_idx = v.first();
-          int weight = v.second(); // weight of edge (u,v)
-
-          // Relax edge
-          if (D[v_idx] > D[u_idx] + weight) {
-            D[v_idx] = D[u_idx] + weight;
-
-            // Add the updated edge (u,v) to PQ
-            pq.add(new IntegerPair(v_idx, D[v_idx]));
-
-            // Update result of the shortest dist between src and v
-            queries[src][v_idx] = D[v_idx];
-          }
-        }
+  // Transform graph with source src
+  private void transformGraph(int curr, int idx, int lvl) {
+    for (int i = 0; i < AdjList.get(curr).size(); i++) {
+      IntegerPair edge = AdjList.get(curr).get(i);
+      GraphLists.get(idx).get(curr).add(new Pair(edge, lvl));
+      lvl++;
+      transformGraph(edge.first(),idx, lvl);
       }
     }
-  }
+
+
+  // // Initialise Dijkstra Algo
+  // private void initSSSP(int src) {
+  //   pq = new TreeSet<>();
+  //   D = new int[V];
+  //   for (int i = 0; i < V; i++)
+  //     D[i] = MAX;
+  //   D[src] = 0;
+  // }
+
+  // private void Dijkstra(int src) {
+  //   pq.add(new IntegerPair(src, 0)); // Adding the source node to PQ
+
+  //   while (!pq.isEmpty()) {
+  //     IntegerPair front = pq.pollFirst();
+  //     int u_idx = front.first();
+
+  //     // Checks if distance from src to u is currently the shortest
+  //     if (front.second() == D[u_idx]) {
+  //       // Iterate through neighbours of u
+  //       for (IntegerPair v : AdjList.get(u_idx)) {
+  //         int v_idx = v.first();
+  //         int weight = v.second(); // weight of edge (u,v)
+
+  //         // Relax edge
+  //         if (D[v_idx] > D[u_idx] + weight) {
+  //           D[v_idx] = D[u_idx] + weight;
+
+  //           // Add the updated edge (u,v) to PQ
+  //           pq.add(new IntegerPair(v_idx, D[v_idx]));
+
+  //           // Update result of the shortest dist between src and v
+  //           queries[src][v_idx] = D[v_idx];
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   // --------------------------------------------
 
