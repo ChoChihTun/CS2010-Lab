@@ -18,11 +18,9 @@ class Bleeding {
   // --------------------------------------------
   private int MAX;
   private int[] D;
-  private int[] p;
-  private PriorityQueue<IntegerPair> pq;
+  private TreeSet<IntegerPair> pq;
+  private int size;
 
-  // idx = source; hashmap key = dest, value = junction
-  private ArrayList<HashMap<Integer, Integer>> junctions;
   private int[][] queries;
   
   // --------------------------------------------
@@ -39,12 +37,22 @@ class Bleeding {
     //
     // write your answer here
     // -------------------------------------------------------------------------
-    queries = new int[V][V];
-    junctions = new ArrayList<>(V);
-    for (int i = 0; i < V; i++) {
-      junctions.add(new HashMap<>(V));
+    size = Math.min(10, V); // query starting vertex size
+    queries = new int[size][V];
+
+    for (int i = 0; i < size; i++) {
+      for (int j = 0; j < V; j++) {
+        if (j == i) 
+          queries[i][j] = 0;
+        else 
+          queries[i][j] = -1;       }
     }
-    initSSSP();
+
+    // Loop through each source vertex for query
+    for (int i = 0; i < size; i++) {
+      initSSSP(i); // Initialise Dijkstra
+      Dijkstra(i);
+    }
     // -------------------------------------------------------------------------
   }
 
@@ -57,21 +65,11 @@ class Bleeding {
     //
     // write your answer here
 
-    // checks if we have permute queries starting with this source
+    // if starting and ending at same node
     if (s == t)
       return 0;
 
-    if (junctions.get(s).isEmpty()) {
-      initSSSP();
-      D[s] = 0;
-      junctions.get(s).put(s, 1); // source node is a junction itself
-
-      Dijkstra(s);
-    }
-
-    if (junctions.get(s).get(t) <= k) {
-      return queries[s][t];
-    }
+    ans = queries[s][t];
 
     // -------------------------------------------------------------------------
 
@@ -82,19 +80,19 @@ class Bleeding {
   // --------------------------------------------
   
   // Initialise Dijkstra Algo
-  private void initSSSP() {
+  private void initSSSP(int src) {
+    pq = new TreeSet<>();
     D = new int[V];
-    for (int i = 0; i < V; i++) {
+    for (int i = 0; i < V; i++)
       D[i] = MAX;
-      pq = new PriorityQueue<IntegerPair>();
-    }
+    D[src] = 0;
   }
 
-  private void Dijkstra(int ori_Src) {
-    pq.add(new IntegerPair(ori_Src, 0)); // Adding the source node to PQ
+  private void Dijkstra(int src) {
+    pq.add(new IntegerPair(src, 0)); // Adding the source node to PQ
 
     while (!pq.isEmpty()) {
-      IntegerPair front = pq.poll();
+      IntegerPair front = pq.pollFirst();
       int u_idx = front.first();
 
       // Checks if distance from src to u is currently the shortest
@@ -102,22 +100,23 @@ class Bleeding {
         // Iterate through neighbours of u
         for (IntegerPair v : AdjList.get(u_idx)) {
           int v_idx = v.first();
-          if (D[v_idx] > D[u_idx] + v.second()) {
-            D[v_idx] = D[u_idx] + v.second();
+          int weight = v.second(); // weight of edge (u,v)
+
+          // Relax edge
+          if (D[v_idx] > D[u_idx] + weight) {
+            D[v_idx] = D[u_idx] + weight;
+
+            // Add the updated edge (u,v) to PQ
+            pq.add(new IntegerPair(v_idx, D[v_idx]));
 
             // Update result of the shortest dist between src and v
-            queries[ori_Src][v_idx] = D[v_idx];
-
-            // Update the number of junctions from src to v
-            int junction_u = junctions.get(ori_Src).get(u_idx);
-            junctions.get(ori_Src).put(v_idx, junction_u + 1);
-
-            pq.add(new IntegerPair(v_idx, D[v_idx]));
+            queries[src][v_idx] = D[v_idx];
           }
         }
       }
     }
   }
+
   // --------------------------------------------
 
   void run() throws Exception {
@@ -209,10 +208,10 @@ class IntegerPair implements Comparable<IntegerPair> {
   }
 
   public int compareTo(IntegerPair o) {
-    if (!this.first().equals(o.first()))
-      return this.first() - o.first();
-    else
+    if (!this.second().equals(o.second())) // checks weight first
       return this.second() - o.second();
+    else
+      return this.first() - o.first();
   }
 
   Integer first() {
