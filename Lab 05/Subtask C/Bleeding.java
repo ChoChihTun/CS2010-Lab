@@ -5,7 +5,7 @@ import javafx.util.Pair;
 
 // write your matric number here: A0154907Y
 // write your name here: Cho Chih Tun
-// write list of collaborators here: Referred to lecture 8 and 9
+// write list of collaborators here: Referred to lecture 10 on Dynamic Programming and Memoization and referred to https://www.geeksforgeeks.org/shortest-path-exactly-k-edges-directed-weighted-graph/ for SSSP with exactly k edges, 
 // year 2018 hash code: psJ6yCZMN7uwQv79EtpQ (do NOT delete this line)
 
 class Bleeding {
@@ -18,10 +18,10 @@ class Bleeding {
   // is accessible to all methods in this class
   // --------------------------------------------
 
-  private int limit;
+  // private int limit;
   private int[][] path_matrix;
   private final int MAX = 1000000000;
-  private Queue<IntegerPair> q;
+  // private Queue<IntegerPair> q;
 
 
   // --------------------------------------------
@@ -47,31 +47,64 @@ class Bleeding {
       return 0;
       
     initMatrix(s, t, k);
-    // ans = DPShortestPaths(s, k - 1);
+    ans = shortestPath(s, k - 1);
 
-    shortestPath(s);
+    // shortestPath(s);
+    // ans = path_matrix[t][k-1];
 
-    ans = path_matrix[t][k];
     if (ans == MAX)
-      ans = -1;
+      return -1;
+
     return ans;
   }
 
   // You can add extra function if needed
   // --------------------------------------------
   void initMatrix(int s, int t, int k) {
-    limit = k;
-    path_matrix = new int[V][k+1];
-    q = new LinkedList<IntegerPair>();
-    q.offer(new IntegerPair(s, 1));
+    // limit = k;
+    path_matrix = new int[V][k];
+    // q = new LinkedList<IntegerPair>();
+    // q.offer(new IntegerPair(s, 1));
 
     for (int i = 0; i < V; i++)
-      for (int j = 0; j < k+1; j++)
-          path_matrix[i][j] = MAX; 
-          
-    path_matrix[s][1] = 0;
+      for (int j = 0; j < k; j++) {
+        // Initialise the destination vertex, cost of reaching dest from dest is 0
+        if (i == t) 
+          path_matrix[i][j] = 0;
+        // Valid limit
+        else if (j != 0)
+          path_matrix[i][j] = -1; // -1: we have yet to compute this vertex
+        else
+        // Invalid limit 
+          path_matrix[i][j] = MAX; // count[i][0] = MAX for all i except i = destination
+      }
+    // path_matrix[s][1] = 0;
   }
 
+  int shortestPath(int curr, int count) { // Count is the number of steps left that we can move
+    // Base cases
+    // (i) No more steps remaining
+    // (ii) shortest path for this curr vertex ha~s been calculated already
+    // (*) reached destination vertex (applies to both point i and ii)
+    if (count == 0 || path_matrix[curr][count] != -1)
+      return path_matrix[curr][count];
+
+    int ans = MAX;
+
+    // Go to all the adjacent neighbours
+    for (IntegerPair e : AdjList.get(curr)) {
+      // Find shortest path from curr vertex -> neighbour vertex e to count-1 steps
+      // away
+      int path_length = e.second() + shortestPath(e.first(), count - 1);
+      ans = Math.min(path_length, ans);
+    }
+
+    path_matrix[curr][count] = ans;
+    return ans;
+  }
+
+  /*
+  // Using BFS 
   private void shortestPath(int s) {
     while (!q.isEmpty()) {
       IntegerPair front = q.poll();
@@ -97,25 +130,8 @@ class Bleeding {
       }
     }
   }
+*/
 
-  // int DPShortestPaths(int current, int remaining_hops) {
-  //   int ans = MAX;
-  //   if (remaining_hops == 0)
-  //     return path_matrix[current][remaining_hops];
-
-  //   if (path_matrix[current][remaining_hops] != -1)
-  //     return path_matrix[current][remaining_hops];
-
-  //   for (IntegerPair edge : AdjList.get(current)) {
-  //     int neighbour = edge.first();
-  //     int weight = edge.second();
-  //     int path_weight = DPShortestPaths(neighbour, remaining_hops - 1) + weight;
-  //     ans = Math.min(ans, path_weight);
-  //   }
-
-  //   path_matrix[current][remaining_hops] = ans;
-  //   return ans;
-  // }
   // --------------------------------------------
 
   void run() throws Exception {
@@ -207,12 +223,10 @@ class IntegerPair implements Comparable<IntegerPair> {
   }
 
   public int compareTo(IntegerPair o) {
-    if (this.second() > o.second())
-      return 1;
-    else if (this.second() < o.second())
-      return -1;
+    if (!this.second().equals(o.second())) // checks weight first
+      return this.second() - o.second();
     else
-      return 0;
+      return this.first() - o.first();
   }
 
   Integer first() {
