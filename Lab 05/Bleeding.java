@@ -17,13 +17,8 @@ class Bleeding {
   // if needed, declare a private data structure here that
   // is accessible to all methods in this class
   // --------------------------------------------
-
-  private int limit;
-  private int[][] path_matrix;
-  private final int MAX = 1000000000;
-  private Queue<IntegerPair> q;
-
-
+  public static final int MAXWEIGHT = 1000000000;
+  private int[][] path_table;
   // --------------------------------------------
 
   public Bleeding() {
@@ -37,85 +32,72 @@ class Bleeding {
 
   }
 
+  /**
+   * Initialisation: During initialisation path_table[destination][j] = 0 for all
+   * j (remaining hops) since cost of reaching destination from destination is 0
+   * for any number of remaining hops path_table[i][0] = MAXWEIGHT (except
+   * i=destination) since path cost of reaching destination from any other vertex
+   * with 0 remaining hops is infinity Rest of the elements are -1 since they
+   * haven't been calculated yet
+   **/
+  void initDP(int t, int k) {
+    path_table = new int[V][k];
+
+    for (int i = 0; i < V; i++)
+      for (int j = 0; j < k; j++) {
+        if (i == t)
+          path_table[i][j] = 0;
+        else if (j == 0)
+          path_table[i][j] = MAXWEIGHT;
+        else
+          path_table[i][j] = -1;
+      }
+  }
+
+  /**
+   * Approach: Divide the problem into individual sub problems based on following
+   * idea: Shortest path from source to destination is same as Min(shortest path
+   * from neighbour to destination + weight of that edge) for all neighbours There
+   * can be different shortest paths for the same pair of vertices depending on
+   * number of hops allowed which is why we store each of those distances for a
+   * particular vertex leading to a 2D memo table (path_table) The element we need
+   * to find is path_table[source][allowed_hops - 1] since the source vertex
+   * always takes up 1 hop/junction
+   **/
+  int DPShortestPaths(int current, int remaining_hops) {
+    int ans = MAXWEIGHT;
+    if (remaining_hops == 0)
+      return path_table[current][remaining_hops];
+
+    if (path_table[current][remaining_hops] != -1)
+      return path_table[current][remaining_hops];
+
+    for (IntegerPair edge : AdjList.get(current)) {
+      int neighbour = edge.first();
+      int weight = edge.second();
+      int path_weight = DPShortestPaths(neighbour, remaining_hops - 1) + weight;
+      ans = Math.min(ans, path_weight);
+    }
+
+    path_table[current][remaining_hops] = ans;
+    return ans;
+  }
+
   int Query(int s, int t, int k) {
     int ans = -1;
     // You have to report the shortest path from Ket Fah's current position s
     // to reach the chosen hospital t, output -1 if t is not reachable from s
     // with one catch: this path cannot use more than k vertices
-
-    if (s == t)
-      return 0;
-      
-    initMatrix(s, t, k);
-    // ans = DPShortestPaths(s, k - 1);
-
-    shortestPath(s);
-
-    ans = path_matrix[t][k];
-    if (ans == MAX)
+    initDP(t, k);
+    ans = DPShortestPaths(s, k - 1);
+    if (ans == MAXWEIGHT)
       ans = -1;
     return ans;
   }
 
   // You can add extra function if needed
   // --------------------------------------------
-  void initMatrix(int s, int t, int k) {
-    limit = k;
-    path_matrix = new int[V][k+1];
-    q = new LinkedList<IntegerPair>();
-    q.offer(new IntegerPair(s, 1));
 
-    for (int i = 0; i < V; i++)
-      for (int j = 0; j < k+1; j++)
-          path_matrix[i][j] = MAX; 
-          
-    path_matrix[s][1] = 0;
-  }
-
-  private void shortestPath(int s) {
-    while (!q.isEmpty()) {
-      IntegerPair front = q.poll();
-      int level = front.second(); // current level of the vertex
-      int curr = front.first(); // vertex we are currently at
-
-      if (level + 1 <= limit) { // within the limit
-        for (IntegerPair e : AdjList.get(curr)) {
-          int weight = e.second();
-          int neighbour = e.first();
-          if (neighbour != s) {
-            int newDist = path_matrix[curr][level] + weight;
-            // System.out.println("level: " + level + " Source: " + front + " neighbour: " + neighbour);
-            // System.out.println("newDist: " + newDist);
-            int oldDist = path_matrix[neighbour][level];
-            // System.out.println("oldDist: " + oldDist);
-            // System.out.println("===============================================");
-
-            path_matrix[neighbour][level + 1] = Math.min(newDist, oldDist);
-            q.offer(new IntegerPair(neighbour, level + 1));
-          }
-        }
-      }
-    }
-  }
-
-  // int DPShortestPaths(int current, int remaining_hops) {
-  //   int ans = MAX;
-  //   if (remaining_hops == 0)
-  //     return path_matrix[current][remaining_hops];
-
-  //   if (path_matrix[current][remaining_hops] != -1)
-  //     return path_matrix[current][remaining_hops];
-
-  //   for (IntegerPair edge : AdjList.get(current)) {
-  //     int neighbour = edge.first();
-  //     int weight = edge.second();
-  //     int path_weight = DPShortestPaths(neighbour, remaining_hops - 1) + weight;
-  //     ans = Math.min(ans, path_weight);
-  //   }
-
-  //   path_matrix[current][remaining_hops] = ans;
-  //   return ans;
-  // }
   // --------------------------------------------
 
   void run() throws Exception {
@@ -149,6 +131,7 @@ class Bleeding {
       if (TC > 0)
         pr.println();
     }
+
     pr.close();
   }
 
