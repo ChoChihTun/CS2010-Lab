@@ -4,7 +4,7 @@ import java.io.*;
 
 // write your matric number here: A0154907Y
 // write your name here: Cho Chih Tun
-// write list of collaborators here: Referred to Lecture note 11 on travelling salesman
+// write list of collaborators here: Referred to Lecture note 11 on travelling salesman and to Lecture 12 note on Floyd Warshall
 // year 2018 hash code: 8A2sCvBuVXdWFrYXe63U (do NOT delete this line)
 
 class Supermarket {
@@ -17,8 +17,9 @@ class Supermarket {
   // is accessible to all methods in this class
   private int[] visited;
   private int min_Cost;
-  private int MAX = 1000000;
+  private int MAX = 100000000;
 
+  private int[][] dist;
   // --------------------------------------------
 
 
@@ -27,8 +28,6 @@ class Supermarket {
     // Write necessary code during construction
     //
     // write your answer here
-
-
 
   }
 
@@ -46,8 +45,9 @@ class Supermarket {
     if (N == 1 && K == 1) {
       ans = T[0][1] * 2;
     } else {
+      FloydWarshall(); // Pre-compute shortest path between all the possible pairs of vertices
       initDFS();
-      DFS(0, 0, K-1);
+      DFS(0, 0, K);
 
       ans = min_Cost;
     }
@@ -56,26 +56,64 @@ class Supermarket {
   }
 
   // You can add extra function if needed
+  private void FloydWarshall() {
+    dist = new int[N+1][N+1];
+
+    // Initialise the distance between vertice pair to INF
+    for (int i = 0; i < N+1; i++)
+      for (int j = 0; j < N+1; j++)
+        dist[i][j] = T[i][j];
+
+    for (int k = 0; k < N+1; k++) {
+      for (int i = 0; i < N+1; i++)
+        for (int j = 0; j < N+1; j++)
+          dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
+    }
+  }
+
   private void initDFS() {
-    visited = new int[N]; // 0 = false, 1 = true
+    visited = new int[N+1]; // 0 = false, 1 = true
     min_Cost = MAX;
   }
 
+  // private void DFS(int u, int curr_Cost, int item_left) {
+  //   if (item_left == 0) {
+  //     min_Cost = Math.min(min_Cost, curr_Cost + dist[u][0]);
+  //     return;
+  //   }
+
+  //    visited[u] = 1;
+
+  //    for (int j = 0; j < N+1; j++) {
+  //      // if u and j are different vertices
+  //      // and if j is one of the items in shopping list
+  //      if (u != j) {
+  //        if (visited[j] == 0)
+  //          DFS(j, curr_Cost + dist[u][j], item_left-1); 
+  //      }
+  //    }
+  //    visited[u] = 0;
+  // }
+
   private void DFS(int u, int curr_Cost, int item_left) {
     if (item_left == 0) {
-      min_Cost = Math.min(min_Cost, curr_Cost + T[u][0]);
+      min_Cost = Math.min(min_Cost, curr_Cost + dist[u][0]);
       return;
     }
 
-     visited[u] = 1;
+    visited[u] = 1;
 
-     for (int j = 1; j < N; j++) {
-       if (u != j) {
-         if (visited[j] == 0)
-           DFS(j, curr_Cost + T[u][j], item_left-1);
-       }
-     }
-     visited[u] = 0;
+    for (int j = 0; j < K; j++) {
+      int item = shoppingList[j];
+
+      // if u and j are different vertices
+      // and if j is one of the items in shopping list
+      if (u != item) {
+        if (visited[item] == 0)
+          DFS(item, curr_Cost + dist[u][item], item_left - 1);
+      }
+    }
+    visited[u] = 0;
   }
 
   // --------------------------------------------
